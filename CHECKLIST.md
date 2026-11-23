@@ -8,9 +8,9 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
   - [x] Map public/product routes, redirects, deep links, grants and private exclusions.
   - [x] Capture mobile and desktop references and document replayable fixture journeys.
   - [x] Inspect the evidence and record outstanding owner decisions.
-- [ ] **2. Prove one runtime and proper routing**
-  - [ ] Create one Next root with site and product layouts, Work, account and a Hono endpoint.
-  - [ ] Verify one build, Worker preview, direct refresh, no-reload transitions, 404s and dirty-editor behavior.
+- [x] **2. Prove one runtime and proper routing**
+  - [x] Create one Next root with site and product layouts, Work, account and a Hono endpoint.
+  - [x] Verify one build, Worker preview, direct refresh, no-reload transitions, 404s and dirty-editor behavior.
 - [ ] **3. Port the approved public design**
   - [ ] Migrate the home sections, five Work cards, menus and interactions.
   - [ ] Migrate the seven public detail pages and verify responsive, keyboard and motion parity.
@@ -30,6 +30,7 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
 - [ ] **7. Rehearse the combined release**
   - [ ] Run clean build, integration, browser, accessibility and Worker checks.
   - [ ] Verify combined route matrix, SEO, JS weight and restore rehearsal on the release artifact.
+  - [ ] Demonstrate the final combined product from this repo alone: clean checkout without either donor folder, one app build, public Home → Work → /app/account → signed-in workspace → public site. Verify both server-rendered public content and a persisted fixture action.
 - [ ] **8. Approved cutover**
   - [ ] Confirm operational dependencies, owner approval, backup and rollback target.
   - [ ] Switch traffic, smoke-test and reconcile background jobs and data.

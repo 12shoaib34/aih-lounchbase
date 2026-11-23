@@ -75,6 +75,10 @@ Each chunk ends with a working checkpoint, personal inspection and an update to 
 | 7 · Combined release rehearsal | Run typecheck, lint, unit, PostgreSQL integration, browser, accessibility and Worker preview tests. Compare first-response HTML, 404 status, header policies, assets, layout, cold-load and public JS. | One clean reproducible artifact, completed route matrix, navigation request evidence, permission matrix, restore rehearsal and explicit unverified items. Hosted staging checks require authorization/configuration. |
 | 8 · Approved cutover | Validate published article inventory and the enquiry destination; preserve ownership of existing live private URLs. Pin previous Worker/assets, restore-test backup, use additive migrations, switch traffic only with release approval. | Smoke public site, private login, grants, enquiry and blog. If failing, restore previous traffic routing/artifact, stop duplicate consumers, reconcile pending writes/jobs. A DB restore is a separate recovery decision. |
 
+## Combined-product acceptance
+
+At Step 7, a clean checkout of this repository with documented configuration and an isolated database must build and run independently of both donor folders. Use one production-mode artifact to demonstrate the public website, a user-facing entry to /app, login, a saved workspace action that survives refresh, and a return to the public site. Check public HTML before JavaScript and soft navigation on ordinary internal links. Reuse existing step evidence for unaffected routes; verify every in-scope module is accounted for. A missing required module keeps acceptance open unless the owner explicitly changes scope. Step 8 promotes the verified artifact after approval.
+
 ## Decisions and handoff
 
 - Use **/app** as the proposed product prefix. Freeze it before generating emails and payment return links. If old Launchbase URLs have users, inventory exact aliases, including token fragments, before cutover.
