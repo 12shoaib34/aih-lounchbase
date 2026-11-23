@@ -1,3 +1,4 @@
+"use client";
 import { customerNavigation } from "@/app/customerNavigation";
 import type { ReactNode } from "react";
 import { WorkspaceFrame } from "@/app/WorkspaceFrame";

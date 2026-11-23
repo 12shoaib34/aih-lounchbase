@@ -40,6 +40,9 @@ test("customer records persist, recover conflicts, guard drafts, filter, paginat
     const [mail] =
       await sql`SELECT url FROM auth_mail_outbox WHERE recipient = ${email} ORDER BY id DESC LIMIT 1`;
     await page.goto(mail.url);
+    await page.goto("/");
+    await page.locator('a[href="/work"]').first().click();
+    await page.getByRole("link", {name:"Account", exact:true}).click();
     await page.getByLabel("Email address").fill(email);
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -221,6 +224,9 @@ test("customer records persist, recover conflicts, guard drafts, filter, paginat
           document.documentElement.clientWidth,
       ),
     ).toBe(true);
+    await page.getByRole("link", {name:"Visit website"}).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.locator("h1")).toBeVisible();
   } finally {
     await sql`DELETE FROM "user" WHERE email = ${email}`;
     await sql`DELETE FROM auth_mail_outbox WHERE recipient = ${email}`;

@@ -22,12 +22,14 @@ try {
   await db.initialise();
   await db.start();
   await db.createDatabase("identity_fixture");
-  const migration = spawn(process.execPath, ["scripts/migrate.mjs"], {
-    env: { ...process.env, DATABASE_URL },
-    stdio: "inherit",
-  });
-  if ((await once(migration, "exit"))[0] !== 0)
-    throw Error("Identity schema migration failed");
+  for (const script of ["scripts/migrate.mjs", "scripts/migrate-site.mjs"]) {
+    const migration = spawn(process.execPath, [script], {
+      env: { ...process.env, DATABASE_URL },
+      stdio: "inherit",
+    });
+    if ((await once(migration, "exit"))[0] !== 0)
+      throw Error("Fixture schema migration failed in " + script);
+  }
   const settings = {
     DATABASE_URL,
     AUTH_SECRET: randomBytes(48).toString("hex"),

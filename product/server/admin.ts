@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import {
   authenticate,
+  allowed,
   requirePermission,
   ApiFault,
   type AppEnv,
@@ -43,4 +44,31 @@ admin.get("/users", requirePermission("users:read"), async (c) => {
   const items =
     await sql`SELECT u.id, u.name, u.email, u."emailVerified", m.role AS "teamRole" FROM "user" u LEFT JOIN team_members m ON m.user_id = u.id WHERE ${filter} ORDER BY u."createdAt" DESC, u.id LIMIT 20 OFFSET ${(page - 1) * 20}`;
   return c.json({ items, total: count.total, page, pageSize: 20 });
+});
+
+admin.get("/account-choices", async (c) => {
+  const input = z
+    .object({
+      purpose: z.enum(["billing", "notifications"]),
+      search: z.string().trim().max(100).default(""),
+    })
+    .safeParse(c.req.query());
+  if (!input.success)
+    throw new ApiFault(400, "VALIDATION_ERROR", "Invalid account lookup.");
+  const required =
+    input.data.purpose === "billing" ? "billing:create" : "notifications:write";
+  if (
+    !allowed(c, required) &&
+    !(input.data.purpose === "billing" && allowed(c, "billing:edit"))
+  )
+    throw new ApiFault(
+      403,
+      "FORBIDDEN",
+      "You do not have access to this account lookup.",
+    );
+  const pattern = `%${input.data.search.replace(/[\\%_]/g, "\\$&")}%`;
+  const items = await c.get(
+    "database",
+  )`SELECT id, name, email FROM "user" WHERE name ILIKE ${pattern} OR email ILIKE ${pattern} ORDER BY name, id LIMIT 20`;
+  return c.json({ items });
 });

@@ -25,3 +25,15 @@ For an independently configured environment, apply the pinned Launchbase migrati
 Contacts and private file metadata use the Launchbase database. File contents use the Worker’s `FILES` R2 binding. Local Worker previews emulate the bucket. Hosted environments need a private bucket bound to `FILES`. Listing, downloading, uploading, reviewing and deleting files have separate grants.
 
 Launchbase CSV exports include a version column for re-importing spreadsheet-escaped text and preserving tags. External CSV files use pipe-separated tags. An interrupted new file upload can resume against existing bytes only when the upload receipt matches the original user and payload. Other unreferenced objects remain available for operator review.
+
+## Combined product verification
+
+After a production build, run these local checks in order. The fixture scripts create disposable databases. Set `E2E_CHANNEL=chrome` to use an installed Chrome.
+
+1. `npm run test:modules` exercises the database, permissions, scheduled deliveries, billing and a stopped-cluster restore on ports 54443 and 54444.
+2. `npm run test:public-data` runs the public browser, routing, accessibility, SEO and enquiry suite.
+3. `npm run test:identity` runs customer and staff browser journeys, including invoice PDF downloads.
+
+Business scheduling, billing and notifications are under `/app/admin`. Customers see their own bookings, invoices and notifications under `/app/account`. The five-minute Worker cron processes product inbox jobs when `QUEUE_SCHEDULE_ENABLED=true`. Email also requires `QUEUE_EMAIL_ENABLED=true` and a configured mail transport. Stripe checkout and signed webhooks use the server-side `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET`. Register the webhook endpoint at `/api/billing-webhook` before enabling payments.
+
+After the first owner registers and verifies their address, use `npm run owner:bootstrap -- <verified-email>` against the intended database. Owner transfer defaults to preview. Inspect the current owner and audit records after an interrupted operator command.

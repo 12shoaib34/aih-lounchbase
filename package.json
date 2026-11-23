@@ -11,7 +11,11 @@
     "preview:identity": "node scripts/identity-preview.mjs",
     "test:identity": "playwright test -c playwright.identity.config.ts",
     "account:recover-mfa": "node scripts/recover-mfa.mjs",
-    "db:migrate": "node scripts/migrate.mjs"
+    "db:migrate": "node scripts/migrate.mjs",
+    "test:modules": "node scripts/product-fixture.mjs",
+    "owner:bootstrap": "node scripts/bootstrap-owner.mjs",
+    "owner:transfer": "node scripts/transfer-owner.mjs",
+    "data:retention": "node scripts/retention.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",
@@ -21,10 +25,12 @@
     "markdown-it": "^14.1.1",
     "next": "16.4.5",
     "papaparse": "^5.7.1",
+    "pdfkit": "^0.20.2",
     "pg": "^8.23.1",
     "postgres": "^3.4.9",
     "react": "19.3.1",
     "react-dom": "19.3.1",
+    "stripe": "^23.1.0",
     "zod": "^4.6.7",
     "zustand": "^5.1.0"
   },
@@ -37,11 +43,20 @@
     "@types/markdown-it": "^14.1.2",
     "@types/node": "24.19.2",
     "@types/papaparse": "^5.5.2",
+    "@types/pdfkit": "^0.17.7",
     "@types/pg": "^8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "axe-core": "^4.14.1",
     "embedded-postgres": "^18.7.0-beta.19",
     "typescript": "5.9.3",
+    "vitest": "^5.1.1",
     "wrangler": "4.158.0"
+  },
+  "imports": {
+    "#invoice-pdfkit": {
+      "browser": "pdfkit",
+      "default": "./product/src/features/admin/pdfServerGuard.js"
+    }
   }
 }

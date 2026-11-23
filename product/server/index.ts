@@ -11,6 +11,9 @@ import { audit } from "./audit";
 import { business } from "./business";
 import { admin } from "./admin";
 import { records } from "./records";
+import { scheduling } from "./scheduling";
+import { notifications, notificationJobs } from "./notifications";
+import { billing, billingWebhook } from "./billing";
 const app = new Hono<AppEnv>();
 app.use("*", async (c, next) => {
   const supplied = c.req.header("X-Request-ID");
@@ -64,6 +67,11 @@ app.get("/api/access", authenticate, (c) =>
 );
 app.route("/api/admin", admin);
 app.route("/api/team", team);
+app.route("/api/notifications", notifications);
+app.route("/api/notification-jobs", notificationJobs);
+app.route("/api/scheduling", scheduling);
+app.route("/api/billing", billing);
+app.route("/api/billing-webhook", billingWebhook);
 app.route("/api/contacts", contacts);
 app.route("/api/files", files);
 app.route("/api/business", business);

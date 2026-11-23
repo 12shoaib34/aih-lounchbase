@@ -1,3 +1,4 @@
+import { checkProductPages } from "./product-pages";
 import { checkContactsAndFiles } from "./contacts-files";
 import { checkAdminModules } from "./admin-modules";
 import { createOTP } from "@better-auth/utils/otp";
@@ -123,6 +124,7 @@ export async function checkInvitation(
     expect((await guest.request.get("/api/team")).status()).toBe(403);
     await checkAdminModules(owner, guest, email, sql);
     await checkContactsAndFiles(owner, guest, email, sql);
+    await checkProductPages(owner, guest, email, sql);
     const [user] = await sql`SELECT id FROM "user" WHERE email=${email}`;
     const recoveryArgs = [
       "scripts/recover-mfa.mjs",

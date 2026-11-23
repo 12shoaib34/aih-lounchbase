@@ -15,10 +15,28 @@ const destinations: {
     permission: "contacts:read",
   },
   {
+    to: "/admin/billing",
+    label: "Billing",
+    group: "Business",
+    permission: "billing:read",
+  },
+  {
+    to: "/admin/scheduling",
+    label: "Scheduling",
+    group: "Business",
+    permission: "scheduling:read",
+  },
+  {
     to: "/admin/files",
     label: "Files",
     group: "Workspace",
     permission: "files:read",
+  },
+  {
+    to: "/admin/notifications",
+    label: "Notifications",
+    group: "Workspace",
+    permission: "notifications:read",
   },
   {
     to: "/admin/accounts",

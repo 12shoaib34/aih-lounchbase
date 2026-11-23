@@ -42,6 +42,24 @@ export function AccountNavigation({ userId }: { userId: string }) {
               <span aria-hidden="true">→</span>
             </Link>
           </li>
+          <li>
+            <Link to="/account/bookings">
+              <span>My bookings</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/account/billing">
+              <span>My billing</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/account/notifications">
+              <span>Notifications</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+          </li>
         </ul>
       </section>
       <section>
