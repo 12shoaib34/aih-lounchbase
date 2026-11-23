@@ -17,6 +17,7 @@ const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 /** Accepts absolute http(s)/mailto URLs and scheme-less relative URLs; rejects everything else. */
 export function isSafeUrl(url: string): boolean {
   // Browsers ignore ASCII whitespace/control characters inside a scheme ("java\tscript:"): strip them first.
+  // oxlint-disable-next-line no-control-regex -- intentionally normalize URL control characters.
   const compact = url.replace(/[\u0000- \u007f]/g, "");
   if (compact.startsWith("//") || compact.startsWith("\\\\") || compact.startsWith("/\\")) return false;
   if (HAS_SCHEME.test(compact)) return SAFE_URL.test(compact);

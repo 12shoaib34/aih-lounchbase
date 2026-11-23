@@ -15,7 +15,8 @@
     "test:modules": "node scripts/product-fixture.mjs",
     "owner:bootstrap": "node scripts/bootstrap-owner.mjs",
     "owner:transfer": "node scripts/transfer-owner.mjs",
-    "data:retention": "node scripts/retention.mjs"
+    "data:retention": "node scripts/retention.mjs",
+    "lint": "oxlint --deny correctness src product scripts tests tests-identity worker.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",
@@ -49,6 +50,7 @@
     "@types/react-dom": "19.3.0",
     "axe-core": "^4.14.1",
     "embedded-postgres": "^18.7.0-beta.19",
+    "oxlint": "^1.94.0",
     "typescript": "5.9.3",
     "vitest": "^5.1.1",
     "wrangler": "4.158.0"

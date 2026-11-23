@@ -20,13 +20,13 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
 - [x] **5. Migrate Launchbase identity and shells**
   - [x] Port account, invite, auth, MFA, personal/staff layouts and reference records.
   - [x] Verify role boundaries, callbacks, deep links and session isolation.
-- [ ] **6. Migrate Launchbase modules**
+- [x] **6. Migrate Launchbase modules**
   - [x] Team, accounts, business settings and audit.
   - [x] Contacts and private files.
-  - [ ] Notifications and jobs.
-  - [ ] Scheduling and bookings.
-  - [ ] Billing, invoices and webhooks.
-  - [ ] Verify permissions, retries and inherited issue disposition per slice.
+  - [x] Notifications and jobs.
+  - [x] Scheduling and bookings.
+  - [x] Billing, invoices and webhooks.
+  - [x] Verify permissions, retries and inherited issue disposition per slice.
 - [ ] **7. Rehearse the combined release**
   - [ ] Run clean build, integration, browser, accessibility and Worker checks.
   - [ ] Verify combined route matrix, SEO, JS weight and restore rehearsal on the release artifact.

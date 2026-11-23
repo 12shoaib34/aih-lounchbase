@@ -121,7 +121,7 @@ function Editor({
             for (const issue of parsed.error.issues) {
               let path = issue.path.join(".");
               // Cross-field hours errors belong to an editable time control.
-              if (/\.hours$/.test(path)) path += ".0.opens";
+              if (path.endsWith(".hours")) path += ".0.opens";
               if (/\.hours\.\d+$/.test(path)) path += ".closes";
               errors[path] ??= issue.message;
             }

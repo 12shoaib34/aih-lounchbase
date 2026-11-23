@@ -1,5 +1,6 @@
 {
   "name": "aih-lounchbase",
+  "minify": true,
   "main": "worker.ts",
   "triggers": { "crons": ["*/5 * * * *"] },
   "compatibility_date": "2026-11-01",
