@@ -1,3 +1,4 @@
+import WorkConcepts from "../../../site/work-concepts";
 import Link from "next/link";
 export const metadata = {
   title: "FoodChoo, PakGo & SabiWorkers | AppsInHours Work",
@@ -239,68 +240,7 @@ export default function Page() {
             Two original studio concepts explore restaurant ordering on the web
             and daily progress tracking on mobile.
           </p>
-          <div className={"work-concepts"}>
-            <button
-              className={"work-concept"}
-              data-project={"commerce"}
-              aria-haspopup={"dialog"}
-            >
-              <span className={"work-concept-art work-concept-commerce"}>
-                <span className={"eyebrow"}>INTERFACE CONCEPT</span>
-                <p className={"work-concept-brand"}>olive &amp; co.</p>
-                <h3>
-                  Your lunch.
-                  <br />
-                  Made lovely.
-                </h3>
-                <div className={"work-mini"}>
-                  <small>FRESH THINKING. GOOD FOOD.</small>
-                  <strong>Explore the menu ↗</strong>
-                  <i />
-                </div>
-              </span>
-              <span
-                className={"work-concept-title"}
-                data-copy={"work-v2-commerce"}
-              >
-                A better way to order
-              </span>
-              <span className={"work-concept-category"}>
-                Design exploration · Restaurant commerce
-              </span>
-            </button>
-            <button
-              className={"work-concept"}
-              data-project={"mobile"}
-              aria-haspopup={"dialog"}
-            >
-              <span className={"work-concept-art work-concept-mobile"}>
-                <span className={"eyebrow"}>INTERFACE CONCEPT</span>
-                <p className={"work-concept-brand"}>
-                  YOUR EVERYDAY, REIMAGINED
-                </p>
-                <h3>
-                  Make room
-                  <br />
-                  for better.
-                </h3>
-                <div className={"work-mini"}>
-                  <small>Your progress</small>
-                  <strong>One step closer.</strong>
-                  <i />
-                </div>
-              </span>
-              <span
-                className={"work-concept-title"}
-                data-copy={"work-v2-mobile"}
-              >
-                Everyday, elevated
-              </span>
-              <span className={"work-concept-category"}>
-                Design exploration · Mobile experience
-              </span>
-            </button>
-          </div>
+          <WorkConcepts />
           <noscript>
             <p>
               These previews are illustrative interface concepts. JavaScript
@@ -328,12 +268,7 @@ export default function Page() {
         </section>
       </main>
 
-      <dialog id={"project-dialog"} aria-labelledby={"project-title"}>
-        <button className={"close"} aria-label={"Close project"}>
-          ✕
-        </button>
-        <div id={"project-detail"} />
-      </dialog>
+
     </>
   );
 }

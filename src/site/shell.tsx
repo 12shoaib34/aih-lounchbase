@@ -164,7 +164,6 @@ export default function Shell({ children }: { children: ReactNode }) {
           await import("./behavior/scene"),
         );
       if (slug in pages) mounts.push(await pages[slug as keyof typeof pages]());
-      if (slug === "work") mounts.push(await import("./behavior/projects"));
       if (!slug || slug === "contact")
         mounts.push(
           await import("./behavior/brief-context"),
