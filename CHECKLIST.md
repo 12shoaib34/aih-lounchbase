@@ -27,10 +27,10 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
   - [x] Scheduling and bookings.
   - [x] Billing, invoices and webhooks.
   - [x] Verify permissions, retries and inherited issue disposition per slice.
-- [ ] **7. Rehearse the combined release**
-  - [ ] Run clean build, integration, browser, accessibility and Worker checks.
-  - [ ] Verify combined route matrix, SEO, JS weight and restore rehearsal on the release artifact.
-  - [ ] Demonstrate the final combined product from this repo alone: clean checkout without either donor folder, one app build, public Home → Work → /app/account → signed-in workspace → public site. Verify both server-rendered public content and a persisted fixture action.
+- [x] **7. Rehearse the combined release** · [Clean checkout results](docs/verification/combined-release.md)
+  - [x] Run clean build, integration, browser, accessibility and Worker checks.
+  - [x] Verify combined route matrix, SEO, JS weight and restore rehearsal on the release artifact.
+  - [x] Demonstrate the final combined product from this repo alone: clean checkout without either donor folder, one app build, public Home → Work → /app/account → signed-in workspace → public site. Verify both server-rendered public content and a persisted fixture action.
 - [ ] **8. Approved cutover**
   - [ ] Confirm operational dependencies, owner approval, backup and rollback target.
   - [ ] Switch traffic, smoke-test and reconcile background jobs and data.
