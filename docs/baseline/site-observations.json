@@ -1,0 +1,128 @@
+[
+  {
+    "route": "/",
+    "width": 390,
+    "status": 200,
+    "heading": "We build\nyour MVP\nfor equity.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/services",
+    "width": 390,
+    "status": 200,
+    "heading": "MVP development and custom software.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/studio",
+    "width": 390,
+    "status": 200,
+    "heading": "A clear path\nfrom scope\nto handover.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/ventures",
+    "width": 390,
+    "status": 200,
+    "heading": "An agreed MVP.\nA shared stake.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/work",
+    "width": 390,
+    "status": 200,
+    "heading": "SabiWorkers.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/engagements",
+    "width": 390,
+    "status": 200,
+    "heading": "Choose how to work with us.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/contact",
+    "width": 390,
+    "status": 200,
+    "heading": "Tell us what you want to build or improve.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/privacy",
+    "width": 390,
+    "status": 200,
+    "heading": "How we handle project enquiries",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/blog",
+    "width": 390,
+    "status": 200,
+    "heading": "Our articles are temporarily unavailable.",
+    "scrollWidth": 375
+  },
+  {
+    "route": "/",
+    "width": 1440,
+    "status": 200,
+    "heading": "We build\nyour MVP\nfor equity.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/services",
+    "width": 1440,
+    "status": 200,
+    "heading": "MVP development and custom software.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/studio",
+    "width": 1440,
+    "status": 200,
+    "heading": "A clear path\nfrom scope\nto handover.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/ventures",
+    "width": 1440,
+    "status": 200,
+    "heading": "An agreed MVP.\nA shared stake.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/work",
+    "width": 1440,
+    "status": 200,
+    "heading": "SabiWorkers.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/engagements",
+    "width": 1440,
+    "status": 200,
+    "heading": "Choose how to work with us.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/contact",
+    "width": 1440,
+    "status": 200,
+    "heading": "Tell us what you want to build or improve.",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/privacy",
+    "width": 1440,
+    "status": 200,
+    "heading": "How we handle project enquiries",
+    "scrollWidth": 1425
+  },
+  {
+    "route": "/blog",
+    "width": 1440,
+    "status": 200,
+    "heading": "Our articles are temporarily unavailable.",
+    "scrollWidth": 1425
+  }
+]

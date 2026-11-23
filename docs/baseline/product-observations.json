@@ -1,0 +1,44 @@
+[
+  {
+    "route": "/account",
+    "width": 390,
+    "status": 200,
+    "heading": "Account access",
+    "scrollWidth": 390
+  },
+  {
+    "route": "/workspace",
+    "width": 390,
+    "status": 200,
+    "heading": "My workspace",
+    "scrollWidth": 390
+  },
+  {
+    "route": "/admin",
+    "width": 390,
+    "status": 200,
+    "heading": "Overview",
+    "scrollWidth": 390
+  },
+  {
+    "route": "/account",
+    "width": 1440,
+    "status": 200,
+    "heading": "Account access",
+    "scrollWidth": 1440
+  },
+  {
+    "route": "/workspace",
+    "width": 1440,
+    "status": 200,
+    "heading": "My workspace",
+    "scrollWidth": 1440
+  },
+  {
+    "route": "/admin",
+    "width": 1440,
+    "status": 200,
+    "heading": "Overview",
+    "scrollWidth": 1440
+  }
+]

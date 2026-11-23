@@ -2,12 +2,12 @@
 
 Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task after checking its result and recording evidence. Tick the numbered step when its exit criteria are met. Update today's context at each checkpoint.
 
-- [ ] **1. Baseline and extraction**
-  - [ ] Pin donor revisions and verify the approved design.
-  - [ ] Inventory files, assets, licences, copy sources, API contracts and environment names.
-  - [ ] Map public/product routes, redirects, deep links, grants and private exclusions.
-  - [ ] Capture mobile and desktop references and document replayable fixture journeys.
-  - [ ] Inspect the evidence and record outstanding owner decisions.
+- [x] **1. Baseline and extraction** · [Verified evidence](docs/baseline/README.md)
+  - [x] Pin donor revisions and verify the approved design.
+  - [x] Inventory files, assets, licences, copy sources, API contracts and environment names.
+  - [x] Map public/product routes, redirects, deep links, grants and private exclusions.
+  - [x] Capture mobile and desktop references and document replayable fixture journeys.
+  - [x] Inspect the evidence and record outstanding owner decisions.
 - [ ] **2. Prove one runtime and proper routing**
   - [ ] Create one Next root with site and product layouts, Work, account and a Hono endpoint.
   - [ ] Verify one build, Worker preview, direct refresh, no-reload transitions, 404s and dirty-editor behavior.
