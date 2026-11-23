@@ -1,0 +1,177 @@
+/* S3 shared marketing foundations. Explicit opt-in excludes portal and utility pages. Blog uses an explicit wrapper.
+   Loaded after legacy presentation; page-specific composition moves in S4. */
+.site-shell.marketing,.blog-shell.marketing{--paper:#090c12;--ink:#eef3fb;--blue:#8aaaff;--muted:#a1acc0;--line:#283448;--surface:#111925;--surface-raised:#172235;--control:#71819d;--focus:#c8d7ff;--radius:12px;font-size:16px;line-height:1.65}
+.marketing :is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.marketing .wrap,.marketing>header{width:min(1200px,calc(100% - 96px));max-width:none;padding-inline:0;margin-inline:auto}
+.marketing>header{height:auto;min-height:96px;display:flex;align-items:center;justify-content:space-between;gap:24px;position:relative;z-index:20}
+.marketing>header .logo{font-size:22px;letter-spacing:-.04em;flex-shrink:0}
+.marketing>header nav{display:flex;align-items:center;gap:20px;position:static;width:auto;max-width:none;padding:0;background:transparent;border:0;box-shadow:none}
+.marketing>header nav a{display:inline-flex;align-items:center;min-height:44px;font-size:14px;line-height:1.4;color:var(--muted);white-space:nowrap;text-decoration:none}
+.marketing>header nav a:hover,.marketing>header nav a[aria-current=page]{color:var(--ink)}
+.marketing>header nav a[aria-current=page]{text-decoration:underline;text-underline-offset:8px}
+.marketing>header nav .nav-cta{padding:12px 16px;border:1px solid var(--control);border-radius:6px;color:var(--ink);background:transparent}
+.marketing>header .menu{display:none;min-height:48px;padding:12px 16px;border:1px solid var(--control);border-radius:6px;font-size:16px;line-height:1.4;background:var(--surface);color:var(--ink)}
+.marketing main p{font-size:16px;line-height:1.7}
+.marketing :is(.section-head h2,.page-section-title){font-size:clamp(30px,3.4vw,48px);line-height:1.15;letter-spacing:-.035em}
+.marketing .hero h1{font-size:clamp(40px,5vw,72px);line-height:1.08;letter-spacing:-.045em}
+.marketing .eyebrow{font-size:12px;line-height:1.6;letter-spacing:.1em}
+.marketing .primary-link{font-size:16px;min-height:48px;line-height:1.4;border-radius:6px;background:var(--blue);color:#0b1730;padding:12px 20px}
+.marketing .primary-link:hover{background:#b1c6ff;color:#0b1730}
+.marketing :is(.solution-card,.engagement-card,.home-path-grid,.venture-two article){border-radius:var(--radius)}
+.marketing :is(input:not([type=checkbox]):not([type=radio]),select,textarea){font-size:16px;line-height:1.5;border-color:var(--control);min-height:48px}
+.marketing form label{font-size:14px;line-height:1.6}
+.marketing form button{font-size:16px;min-height:48px;line-height:1.4}
+.marketing :is(.faq summary,.offer-rows summary,.service-list summary){min-height:48px}
+.marketing>.site-footer{padding-block:32px;display:grid;grid-template-columns:auto 1fr;align-items:start;gap:24px;border-top:1px solid var(--line)}
+.marketing>.site-footer .footer-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px 24px}
+.marketing>.site-footer .footer-links a{font-size:14px;line-height:1.5;min-height:44px;display:inline-flex;align-items:center;color:var(--muted);overflow-wrap:anywhere}
+.marketing>.site-footer .footer-links a:hover{color:var(--ink)}
+.marketing>.site-footer>span{font-size:14px;line-height:1.6;color:var(--muted);grid-column:1/-1}
+@media(max-width:1199px){.marketing>header{flex-wrap:wrap;padding-block:20px}.marketing>header nav{flex:1 0 100%;flex-wrap:wrap;gap:8px 20px}.marketing>header.enhanced .menu{display:block}.marketing>header.enhanced nav{display:none}.marketing>header.enhanced nav.open{display:flex}}
+@media(max-width:1023px){.marketing .wrap,.marketing>header{width:calc(100% - 64px)}}
+@media(max-width:639px){.marketing .wrap,.marketing>header{width:calc(100% - 40px)}.marketing>header{gap:16px}.marketing>header .logo{font-size:20px}.marketing>header nav{flex-direction:column;align-items:stretch;gap:4px}.marketing>header nav a{min-height:48px;padding:10px 12px}.marketing .primary-link{max-width:100%;white-space:normal;text-align:center}.marketing>.site-footer{grid-template-columns:1fr}.marketing>.site-footer .footer-links{justify-content:flex-start;gap:4px 20px}.marketing .hero-buttons{align-items:stretch}.marketing .hero-buttons .primary-link{width:100%}}
+@media(prefers-reduced-motion:reduce){.marketing *,.marketing *::before,.marketing *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* S4a homepage composition. Separate classes avoid legacy page layout collisions. */
+.marketing .home-v2 h1{font-size:clamp(40px,4.6vw,66px);line-height:1.08;letter-spacing:-.045em;margin:20px 0 24px}
+.marketing .home-v2 h2{font-size:clamp(30px,3.4vw,48px);line-height:1.14;letter-spacing:-.035em;margin:12px 0 24px}
+.marketing .home-v2 h3{font-size:25px;line-height:1.25;letter-spacing:-.025em;margin:16px 0}
+.marketing .home-v2 p{color:var(--muted);margin:0 0 20px;max-width:65ch}
+.marketing .home-v2 .eyebrow{color:var(--blue);margin:0;font-size:12px}
+.marketing .home-v2 a:not(.primary-link){display:inline-flex;align-items:center;min-height:44px;color:var(--ink);text-decoration:underline;text-underline-offset:6px;font-size:16px}
+.marketing .home-v2 a:not(.primary-link):hover{color:var(--blue)}
+.marketing .home-v2 .primary-link{display:inline-flex;align-items:center;justify-content:center}
+.marketing .home-opening{display:grid;grid-template-columns:1.2fr 1fr;gap:64px;align-items:center;padding-block:72px 96px}
+.marketing .home-actions{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:center;margin-top:28px}
+.marketing .home-flow{margin:0;background:linear-gradient(145deg,var(--surface-raised),var(--surface));border:1px solid var(--line);border-radius:16px;padding:28px}
+.marketing .home-flow-top{display:flex;justify-content:space-between;gap:16px;color:var(--blue);font-size:12px;letter-spacing:.08em;border-bottom:1px solid var(--line);padding-bottom:20px}
+.marketing .home-flow ol{list-style:none;padding:0;margin:0}
+.marketing .home-flow li{display:flex;gap:20px;padding:24px 0;border-bottom:1px solid var(--line)}
+.marketing .home-flow li>span{color:var(--blue);font-size:14px;padding-top:3px}
+.marketing .home-flow h2{font-size:22px;letter-spacing:-.02em;margin:0 0 8px}
+.marketing .home-flow p{margin:0;font-size:15px}
+.marketing .home-v2 figcaption{color:var(--muted);font-size:13px;line-height:1.6;margin-top:20px}
+.marketing .home-block{padding-block:72px;border-top:1px solid var(--line)}
+.marketing .home-heading{margin-bottom:36px;max-width:800px}
+.marketing .home-feature{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:40px}
+.marketing .home-feature h3{font-size:34px}
+.marketing .home-job{margin:0;border:1px solid #3b5269;border-radius:12px;background:#11252c;padding:32px}
+.marketing .home-wordmark{font-size:30px;letter-spacing:-.04em;font-weight:600}
+.marketing .home-job ol{padding-left:24px;margin:24px 0 0}
+.marketing .home-job li{padding:14px 0 14px 8px;border-bottom:1px solid #3b5269}
+.marketing .home-cards,.marketing .home-delivery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.marketing .home-cards article{display:flex;flex-direction:column;padding:28px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.marketing .home-cards article a{margin-top:auto}
+.marketing .home-workflows{margin-bottom:28px}
+.marketing .home-workflows article{display:grid;grid-template-columns:40px 1fr 1fr;align-items:baseline;gap:24px;padding:24px 0;border-bottom:1px solid var(--line)}
+.marketing .home-workflows h3,.marketing .home-workflows p{margin:0}
+.marketing .home-workflows article>span{color:var(--blue);font-size:14px}
+.marketing .home-delivery{list-style:none;padding:0;margin:0 0 20px}
+.marketing .home-delivery li{padding:24px 0;border-top:2px solid var(--blue)}
+.marketing .home-scope{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+.marketing .home-questions details{border-bottom:1px solid var(--line);padding-block:12px}
+.marketing .home-questions summary{font-size:20px;line-height:1.4;cursor:pointer;padding:16px 8px;min-height:56px}
+.marketing .home-questions details p{padding:8px;margin-bottom:12px}
+.marketing .home-ending h2{max-width:22ch;font-size:clamp(36px,4.6vw,64px)}
+.marketing .home-ending{padding-bottom:96px}
+@media(max-width:1023px){.marketing .home-opening,.marketing .home-feature,.marketing .home-scope{gap:32px}.marketing .home-cards{grid-template-columns:1fr}.marketing .home-cards article{padding:28px}.marketing .home-feature{padding:28px}.marketing .home-delivery{gap:20px}}
+@media(max-width:767px){.marketing .home-opening,.marketing .home-feature,.marketing .home-scope,.marketing .home-delivery{grid-template-columns:1fr}.marketing .home-opening{padding-block:40px 56px;gap:40px}.marketing .home-block{padding-block:48px}.marketing .home-flow,.marketing .home-feature,.marketing .home-job{padding:24px}.marketing .home-workflows article{grid-template-columns:28px 1fr;gap:12px}.marketing .home-workflows p{grid-column:2}.marketing .home-heading{margin-bottom:28px}.marketing .home-ending{padding-bottom:64px}}
+@media(max-width:399px){.marketing .home-flow,.marketing .home-feature,.marketing .home-job{padding:20px}.marketing .home-feature h3{font-size:28px}.marketing .home-flow li{gap:12px}.marketing .home-actions{align-items:stretch;flex-direction:column}}
+
+/* Shared S4 inner-page composition, explicitly opted in by main.content-v2. */
+.marketing .content-v2 h1{font-size:clamp(40px,5.5vw,76px);line-height:1.06;letter-spacing:-.045em;max-width:16ch;margin:20px 0 28px}
+.marketing .content-v2 h2{font-size:clamp(30px,3.4vw,48px);line-height:1.15;letter-spacing:-.035em;margin:12px 0 28px;max-width:24ch}
+.marketing .content-v2 h3{font-size:25px;line-height:1.25;letter-spacing:-.025em;margin:0 0 16px}
+.marketing .content-v2 p{color:var(--muted);max-width:65ch;margin:0 0 20px}
+.marketing .content-v2 .eyebrow{color:var(--blue);font-size:12px;margin:0 0 12px}
+.marketing .content-v2 a:not(.primary-link){display:inline-flex;align-items:center;min-height:44px;font-size:16px;text-decoration:underline;text-underline-offset:6px}
+.marketing .content-v2 a:hover{color:var(--blue)}
+.marketing .content-v2 .primary-link{display:inline-flex;align-items:center;justify-content:center;color:#0b1730}
+.marketing .content-opening{padding-block:64px 80px}
+.marketing .content-opening>p:not(.eyebrow){font-size:18px;max-width:65ch}
+.marketing .content-block{padding-block:64px;border-top:1px solid var(--line)}
+.marketing .content-split{display:grid;grid-template-columns:1fr 1.2fr;gap:64px;align-items:start}
+.marketing .content-panel,.marketing .content-cards>article{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:32px}
+.marketing .content-panel p:last-child,.marketing .content-cards p:last-child{margin-bottom:0}
+.marketing .content-checklist{list-style:disc;padding-left:24px;margin:24px 0;color:var(--ink)}
+.marketing .content-checklist li{padding:8px 0 8px 8px}
+.marketing .content-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:36px}
+.marketing .content-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px 24px}
+.marketing .content-questions details{padding-block:12px;border-bottom:1px solid var(--line)}
+.marketing .content-questions summary{cursor:pointer;padding:16px 8px;min-height:56px;font-size:20px;line-height:1.4}
+.marketing .content-questions details p{padding:8px;margin-bottom:12px}
+.marketing .delivery-sequence{list-style:none;padding:0;margin:36px 0 0}
+.marketing .delivery-sequence>li{display:grid;grid-template-columns:80px 1fr;gap:32px;padding:32px 0;border-top:1px solid var(--line)}
+.marketing .delivery-sequence>li>.eyebrow{font-size:24px}
+.marketing .delivery-sequence .delivery-output{border-left:2px solid var(--blue);padding-left:20px;color:var(--ink);margin-bottom:0}
+.marketing .content-ending{padding-bottom:88px}
+@media(max-width:1023px){.marketing .content-split{gap:32px}.marketing .content-cards{grid-template-columns:1fr}.marketing .content-panel,.marketing .content-cards>article{padding:28px}}
+@media(max-width:767px){.marketing .content-opening{padding-block:40px 56px}.marketing .content-block{padding-block:48px}.marketing .content-split{grid-template-columns:1fr}.marketing .delivery-sequence>li{grid-template-columns:32px 1fr;gap:16px}.marketing .content-panel,.marketing .content-cards>article{padding:24px}.marketing .content-ending{padding-bottom:64px}}
+
+.marketing .content-v2 .portfolio-lead{font-size:clamp(24px,3vw,36px);line-height:1.3;color:var(--ink);max-width:30ch}
+.marketing .portfolio-facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;padding:28px 0;margin:32px 0;border-block:1px solid var(--line)}
+.marketing .portfolio-facts dt{font-size:13px;color:var(--muted);margin-bottom:8px}
+.marketing .portfolio-facts dd{font-size:17px;margin:0}
+.marketing .portfolio-partnership{margin-top:40px}
+.marketing .content-v2 .projects{margin-top:36px}
+.marketing .content-v2 .project{text-align:left;color:var(--ink)}
+.marketing .content-v2 .project-caption{padding-block:24px}
+.marketing .content-v2 .project-caption h3{margin:0 0 8px}
+.marketing #project-dialog p,.marketing #project-dialog li{font-size:16px;line-height:1.7}
+.marketing #project-dialog .close{min-width:48px;min-height:48px}
+@media(max-width:767px){.marketing .portfolio-facts{grid-template-columns:1fr 1fr}.marketing .content-v2 .projects{grid-template-columns:1fr}}
+.marketing .content-v2 ol.content-checklist{list-style:decimal}
+
+/* Contact keeps the established form contract while adopting the new typography. */
+.marketing .contact-v2 .contact{padding-block:64px 88px}
+.marketing .contact-v2 h1{font-size:clamp(40px,4.6vw,64px);line-height:1.08;letter-spacing:-.045em;margin:20px 0 28px}
+.marketing .contact-v2 .contact-grid{grid-template-columns:1fr 1.2fr;gap:64px;align-items:start}
+.marketing .contact-v2 .contact-grid>div>p{color:var(--muted)}
+.marketing .contact-v2 .contact-email a{font-size:16px;overflow-wrap:anywhere}
+.marketing .contact-v2 form{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:32px}
+.marketing .contact-v2 form label{display:block;margin-bottom:20px;color:var(--ink)}
+.marketing .contact-v2 form :is(input,select,textarea){width:100%;margin-top:8px;background:var(--paper);color:var(--ink);border-radius:6px}
+.marketing .contact-v2 form .venture-ack{display:flex;align-items:flex-start;gap:12px}
+.marketing .contact-v2 form .venture-ack input{width:20px;min-height:20px;height:20px;flex-shrink:0;margin-top:4px}
+.marketing .contact-v2 .brief-optional{padding-block:12px;margin-bottom:24px;border-block:1px solid var(--line)}
+.marketing .contact-v2 .brief-optional summary{min-height:48px;cursor:pointer;padding-block:12px;font-size:16px}
+.marketing .contact-v2 #send-panel p,.marketing .contact-v2 .form-actions span{font-size:14px;line-height:1.6}
+.marketing .contact-v2 .form-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.marketing .contact-v2 button{white-space:normal}
+@media(max-width:1023px){.marketing .contact-v2 .contact-grid{gap:32px}}
+@media(max-width:767px){.marketing .contact-v2 .contact{padding-block:40px 64px}.marketing .contact-v2 .contact-grid{grid-template-columns:1fr}.marketing .contact-v2 form{padding:24px}}
+.marketing .contact-v2 button:disabled{opacity:.55;cursor:not-allowed}
+
+.marketing .service-catalogue,.marketing .project-catalogue{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin-top:36px}
+.marketing :is(.service-catalogue,.project-catalogue)>article{display:flex;flex-direction:column;border:1px solid var(--line);background:var(--surface);padding:32px;border-radius:12px;scroll-margin-top:24px}
+.marketing :is(.service-catalogue,.project-catalogue)>article>a{margin-top:auto;align-self:flex-start}
+.marketing .content-v2 .service-discuss{padding-left:16px;border-left:2px solid var(--blue);color:var(--ink)}
+.marketing .project-catalogue details{border-top:1px solid var(--line);padding-block:12px;margin-bottom:16px}
+.marketing .project-catalogue summary{font-size:16px;min-height:48px;padding-block:12px;cursor:pointer}
+.marketing .expertise-chips{display:flex;gap:12px;flex-wrap:wrap;padding:0;margin:0 0 28px;list-style:none}
+.marketing .expertise-chips li{border:1px solid var(--control);border-radius:6px;padding:8px 16px;font-size:16px}
+@media(max-width:767px){.marketing .service-catalogue,.marketing .project-catalogue{grid-template-columns:1fr}.marketing :is(.service-catalogue,.project-catalogue)>article{padding:24px}}
+
+.marketing .scope-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:36px 0}
+.marketing .scope-options article{padding:32px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.marketing .contact-v2 #selected-context{font-size:14px;border-left:2px solid var(--blue);padding:12px 16px;background:var(--paper);overflow-wrap:anywhere}
+.marketing .contact-v2 #selected-context[hidden]{display:none}
+@media(max-width:767px){.marketing .scope-options{grid-template-columns:1fr}.marketing .scope-options article{padding:24px}}
+
+/* S5a: static anchors remain usable without the active-step enhancement. */
+.marketing .delivery-layout{display:grid;grid-template-columns:200px 1fr;gap:48px;align-items:start}
+.marketing .delivery-nav{display:flex;position:sticky;top:24px;left:auto;right:auto;flex-direction:column;align-items:stretch;gap:8px;padding:12px 0;margin-top:24px;width:auto;background:none;border:0;box-shadow:none}
+.marketing .content-v2 .delivery-nav a{min-height:48px;padding:12px 16px;gap:16px;text-decoration:none;border-left:2px solid var(--line);white-space:normal;color:var(--muted)}
+.marketing .delivery-nav a>span{font-size:12px;color:var(--blue)}
+.marketing .content-v2 .delivery-nav a[aria-current=step]{background:var(--surface);border-color:var(--blue);color:var(--ink)}
+.marketing .delivery-layout .delivery-sequence{margin-top:24px}
+.marketing .delivery-sequence>li{scroll-margin-top:32px}
+@media(max-width:1023px){.marketing .delivery-layout{grid-template-columns:1fr;gap:0}.marketing .delivery-nav{position:static;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:0}.marketing .content-v2 .delivery-nav a{padding:12px 8px;gap:8px}}
+@media(max-width:479px){.marketing .delivery-nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+@media(prefers-reduced-motion:no-preference) and (hover:hover){
+.marketing :is(.primary-link,.nav-cta,button:not(.project)){transition:background-color 160ms ease,transform 160ms ease}
+.marketing :is(.primary-link,.nav-cta,button:not(.project)):not(:disabled):hover{transform:translateY(-2px)}
+.marketing :is(.primary-link,.nav-cta,button:not(.project)):not(:disabled):active{transform:translateY(1px)}
+}
+.marketing .content-opening .venture-condition{font-size:14px;margin-top:20px}

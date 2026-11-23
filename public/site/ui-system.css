@@ -1,0 +1,95 @@
+/* Public typography and actions. Loaded after page styles; scoped away from staff tools.
+   Change role tokens here, rather than adding page-specific size overrides. */
+.ui-system {
+  --type-display: clamp(56px, 8.4vw, 121px);
+  --type-title: clamp(44px, 5vw, 72px);
+  --type-section: clamp(38px, 4.5vw, 64px);
+  --type-card: 24px;
+  --type-subheading: 32px;
+  --type-lead: 18px;
+  --type-body: 16px;
+  --type-caption: 14px;
+  --type-eyebrow: 11px;
+  --type-reading: 18px;
+  --type-action: 14px;
+  --leading-title: 1.12;
+  --leading-heading: 1.25;
+  --leading-body: 1.7;
+  --leading-reading: 1.8;
+  --weight-heading: 400;
+  --weight-action: 600;
+  --tracking-heading: -.04em;
+  --action-height: 52px;
+  --action-compact-height: 44px;
+  --action-radius: 999px;
+  --action-padding-y: 14px;
+  --action-padding-x: 24px;
+  --action-gap: 16px;
+  --action-compact-padding-y: 10px;
+  --action-compact-padding-x: 18px;
+  --action-focus: 3px;
+  --action-disabled-opacity: .6;
+}
+@media (max-width:700px) {
+  .ui-system { --type-display: clamp(56px,18vw,84px); --type-title:44px; --type-section:38px; --type-card:22px; --type-subheading:28px; --type-lead:16px; --type-reading:17px; }
+}
+
+/* Heading levels describe a role; illustration typography remains independent. */
+.marketing.onepage.ui-system main h1 { font-size:var(--type-title); line-height:var(--leading-title); font-weight:var(--weight-heading); letter-spacing:var(--tracking-heading); }
+.marketing.onepage.ui-system .op-hero h1 { font-size:var(--type-display); line-height:1; font-weight:600; }
+.marketing.onepage.ui-system main h2 { font-size:var(--type-section); line-height:var(--leading-heading); font-weight:var(--weight-heading); letter-spacing:var(--tracking-heading); }
+.marketing.onepage.ui-system main h3:where(:not(.work-concept-art h3):not(.op-project-art h3)) { font-size:var(--type-card); line-height:var(--leading-heading); font-weight:var(--weight-heading); letter-spacing:var(--tracking-heading); }
+.marketing.onepage.ui-system :is(.studio-art,.venture-partnership,.contact-form-heading,.blog-body,.privacy-panel) h2 { font-size:var(--type-subheading); }
+.marketing.onepage.ui-system .blog-list h2 { font-size:var(--type-card); }
+.marketing.onepage.ui-system .pricing-service > summary h3 { font-size:var(--type-lead); }
+.marketing.onepage.ui-system :is(.studio-faq,.venture-faq,.content-questions,.op-faq) summary { font-size:var(--type-card); line-height:var(--leading-heading); }
+
+/* Body, introduction, editorial statement and caption are separate roles. */
+.marketing.onepage.ui-system main p:where(:not(.eyebrow):not(.work-concept-art p):not(.op-project-art p)) { font-size:var(--type-body); line-height:var(--leading-body); }
+.marketing.onepage.ui-system :is(.studio-hero-copy,.venture-hero-copy,.work-opening,.detail-hero>div,.contact-intro,.blog-opening,.blog-missing)>p:not(.eyebrow):not(.venture-condition):not(.contact-email):not(.work-opening-title),
+.marketing.onepage.ui-system main :is(.op-intro,.op-venture-intro,.op-pricing-intro),
+.marketing.onepage.ui-system .privacy-opening>p { font-size:var(--type-lead); line-height:var(--leading-body); }
+.marketing.onepage.ui-system main :is(.op-statement,.op-process-lead,.work-lead,.work-opening-title) { font-size:var(--type-subheading); line-height:1.4; letter-spacing:var(--tracking-heading); }
+.marketing.onepage.ui-system main :is(.detail-art-note,.studio-art-note,.work-art-note,.venture-condition,.venture-boundaries,.op-venture-condition,.op-process-note,.op-contact-note,.pricing-review-note,.pricing-boundary),
+.marketing.onepage.ui-system #brief #send-panel p { font-size:var(--type-caption); line-height:var(--leading-body); }
+.marketing.onepage.ui-system :is(.privacy-panel,.blog-body) p,
+.marketing.onepage.ui-system .blog-body li { font-size:var(--type-reading); line-height:var(--leading-reading); }
+.marketing.onepage.ui-system main .eyebrow { font-size:var(--type-eyebrow); line-height:1.6; }
+/* Service indices use a generated number in place of the visually hidden label. */
+.marketing.onepage.ui-system .service-catalogue>article>.eyebrow { font-size:0; }
+.marketing.onepage.ui-system .pricing-tier li { font-size:var(--type-caption); line-height:var(--leading-body); }
+
+/* Primary action. Legacy primary-link is an alias; ui-button is available to new components. */
+.marketing.onepage.ui-system :is(.primary-link,.ui-button),
+.marketing.onepage.ui-system #brief #send-enquiry {
+  box-sizing:border-box; display:inline-flex; align-items:center; justify-content:center;
+  gap:var(--action-gap); min-height:var(--action-height); height:auto;
+  padding:var(--action-padding-y) var(--action-padding-x); max-width:100%;
+  border:1px solid var(--electric); border-radius:var(--action-radius);
+  background:var(--electric); color:#fff; font-family:inherit;
+  font-size:var(--type-action); font-weight:var(--weight-action); line-height:1.5;
+  letter-spacing:normal; text-align:center; text-decoration:none; white-space:normal;
+  overflow-wrap:anywhere; cursor:pointer;
+}
+/* Compact is a size, secondary is an appearance: they can be combined. */
+.marketing.onepage.ui-system :is(.ui-button--compact,.pricing-tier .primary-link,.nav-cta) {
+  min-height:var(--action-compact-height); padding:var(--action-compact-padding-y) var(--action-compact-padding-x); font-size:var(--type-action); line-height:1.5; border-radius:var(--action-radius);
+}
+.marketing.onepage.ui-system :is(.ui-button--secondary,.pricing-tier:not(.pricing-tier-feature) .primary-link) {
+  background:var(--surface); color:var(--ink); border:1px solid var(--line);
+}
+.marketing.onepage.ui-system :is(.primary-link,.ui-button):hover,
+.marketing.onepage.ui-system .pricing-tier:not(.pricing-tier-feature) .primary-link:hover,
+.marketing.onepage.ui-system #brief #send-enquiry:enabled:hover { background:var(--ink); border-color:var(--ink); color:var(--paper); }
+.marketing.onepage.ui-system :is(.ui-button--text,.op-text-link,.content-actions>a:not(.primary-link),.studio-actions>a:not(.primary-link),.venture-actions>a:not(.primary-link),.work-actions>a:not(.primary-link),.service-catalogue>article>a,.project-catalogue>article>a) {
+  display:inline-flex; align-items:center; gap:var(--action-gap); min-height:var(--action-compact-height);
+  font-size:var(--type-action); font-weight:var(--weight-action); line-height:1.5;
+  background:transparent; color:var(--blue); border:0; text-decoration:none; white-space:normal;
+}
+.marketing.onepage.ui-system :is(.primary-link,.ui-button,.op-text-link,.nav-cta):focus-visible,
+.marketing.onepage.ui-system #brief #send-enquiry:focus-visible { outline:var(--action-focus) solid var(--blue); outline-offset:4px; }
+.marketing.onepage.ui-system :is(.ui-button:disabled,.ui-button[aria-disabled=true]),
+.marketing.onepage.ui-system #brief #send-enquiry:disabled { opacity:var(--action-disabled-opacity); cursor:not-allowed; }
+/* Preserve the requested send-only alignment, separate from action appearance. */
+.marketing.onepage.ui-system #brief #send-enquiry { display:flex; width:fit-content; margin-left:auto; }
+.marketing.onepage.ui-system .page-back { font-size:var(--type-action); min-height:var(--action-compact-height); border-radius:var(--action-radius); }

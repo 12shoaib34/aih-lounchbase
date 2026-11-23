@@ -1,0 +1,19 @@
+/* Supplied outlined SVGs: keep their proportions and original clear space. */
+.brand-art{display:block;width:220px;max-width:100%;line-height:0}
+.brand-art>img{display:block;width:100%;height:auto;max-width:100%;object-fit:contain}
+.brand-art>.brand-on-light,.brand-art>.brand-on-print{display:none}
+html[data-theme=light] .brand-art>.brand-on-dark{display:none}
+html[data-theme=light] .brand-art>.brand-on-light{display:block}
+.logo:has(.brand-art){display:inline-flex;flex:0 0 auto;gap:0;line-height:1}
+.onepage>header .logo .brand-art{width:210px}
+.site-footer .brand-art{width:220px}
+.brand-art.brand-icon{width:80px}
+.workspace-brand,.proposal-brand{display:inline-flex;line-height:1}
+.workspace-brand .brand-art{width:188px}
+.proposal-brand{margin-bottom:24px}
+.proposal-brand .brand-art{width:220px}
+.error-brand{margin-bottom:30px}
+@media(max-width:1000px){.workspace-brand .brand-art{width:158px}}
+@media(max-width:650px){.workspace-brand .brand-art{width:190px}}
+@media(max-width:600px){header .logo .brand-art{width:160px}.marketing>header .logo .brand-art{width:clamp(140px,42vw,180px)}.marketing>header .menu{padding-inline:12px}.site-footer .brand-art{width:200px}.proposal-brand .brand-art{width:200px}}
+@media print{.brand-art{background:#fff!important;print-color-adjust:exact;-webkit-print-color-adjust:exact}.brand-art>.brand-on-dark,.brand-art>.brand-on-light{display:none!important}.brand-art>.brand-on-print{display:block!important}}

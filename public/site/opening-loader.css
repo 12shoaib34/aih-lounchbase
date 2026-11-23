@@ -1,0 +1,47 @@
+/* Decorative opening curtain. Hidden unless the early bootstrap opts in. */
+.opening-loader{display:none}
+html[data-opening=loading] .opening-loader,html[data-opening=opening] .opening-loader{display:grid;position:fixed;inset:0;z-index:10000;place-items:center;isolation:isolate;--opening-paper:#07090e;--opening-ink:#f2f4fa;--opening-blue:#94adff}
+@media(prefers-color-scheme:light){.opening-loader{--opening-paper:#f6f7fa;--opening-ink:#11182b;--opening-blue:#3456dc}}
+html[data-theme=light] .opening-loader{--opening-paper:#f6f7fa;--opening-ink:#11182b;--opening-blue:#3456dc}
+.opening-loader__panel{position:absolute;left:0;right:0;height:50.2%;background:var(--opening-paper);z-index:-1;transition:transform 1.1s cubic-bezier(.76,0,.24,1);will-change:transform}
+.opening-loader__panel:first-child{top:0;border-bottom:1px solid color-mix(in srgb,var(--opening-blue) 16%,transparent)}
+.opening-loader__panel:nth-child(2){bottom:0}
+.opening-loader__brand{width:min(300px,65vw);text-align:center;color:var(--opening-ink);transition:opacity .25s,transform .4s}
+.opening-loader__brand img{display:block;width:100%;height:auto}
+.opening-loader__light{display:none!important}
+html[data-theme=light] .opening-loader__dark{display:none}
+html[data-theme=light] .opening-loader__light{display:block!important}
+.opening-loader__line{display:block;width:72px;height:2px;margin:30px auto 0;overflow:hidden;background:color-mix(in srgb,var(--opening-blue) 18%,transparent)}
+.opening-loader__line::after{content:'';display:block;height:100%;width:100%;background:var(--opening-blue);transform-origin:left;animation:opening-pulse 1.3s ease-in-out infinite}
+.opening-loader__label{display:block;margin-top:16px;font:10px/1.6 Arial,Helvetica,sans-serif;letter-spacing:.18em;text-transform:uppercase;opacity:.65}
+.opening-loader__skip{position:absolute;bottom:32px;right:32px;min-height:44px;padding:10px 18px;border:1px solid color-mix(in srgb,var(--opening-blue) 25%,transparent);border-radius:999px;background:transparent;color:var(--opening-ink);font:12px/1.5 Arial,Helvetica,sans-serif;cursor:pointer}
+.opening-loader__skip:focus-visible{outline:2px solid var(--opening-blue);outline-offset:4px}
+html[data-opening=opening] .opening-loader{pointer-events:none}
+html[data-opening=opening] .opening-loader__panel:first-child{transform:translateY(-101%)}
+html[data-opening=opening] .opening-loader__panel:nth-child(2){transform:translateY(101%)}
+html[data-opening=opening] .opening-loader__brand{opacity:0;transform:scale(.97)}
+html[data-opening=opening] .opening-loader__skip{opacity:0}
+@keyframes opening-pulse{0%,100%{transform:scaleX(.15);opacity:.4}50%{transform:scaleX(1);opacity:1}}
+html[data-opening-still] .opening-loader *,html[data-opening-still] .opening-loader *::after{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.opening-loader *,.opening-loader *::after{animation:none!important;transition:none!important}}
+/* One entrance per full Home load. Separate properties preserve SVG pointer motion. */
+html[data-hero-intro=waiting] .op-hero :is(h1,.op-sculpture){opacity:0}
+.op-hero h1>.hero-reveal-line{display:block;overflow:clip;color:inherit;padding-bottom:.08em;margin-bottom:-.08em}
+.op-hero h1>.hero-reveal-line:last-child{color:var(--blue)}
+.hero-reveal-line>span{display:block}
+html[data-hero-intro=reveal] .hero-reveal-line>span{animation:opening-line 1.1s cubic-bezier(.16,1,.3,1) both}
+html[data-hero-intro=reveal] .hero-reveal-line:nth-child(2)>span{animation-delay:.14s}
+html[data-hero-intro=reveal] .hero-reveal-line:nth-child(3)>span{animation-delay:.28s}
+html[data-hero-intro=reveal] .op-sculpture{animation:opening-sculpture 1.5s cubic-bezier(.16,1,.3,1) both}
+html[data-hero-intro=reveal] .op-live-symbol [data-symbol-path]{stroke-dasharray:var(--trace-length);animation:opening-trace 1.65s var(--trace-delay,0s) cubic-bezier(.45,0,.2,1) both}
+html[data-hero-intro=reveal] .op-live-symbol :is(path:not([data-symbol-path]),circle){animation:opening-nodes .6s .9s both}
+html[data-hero-intro=reveal] #op-canvas::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,transparent 36%,color-mix(in srgb,var(--blue) 18%,transparent) 50%,transparent 64%);background-size:250% 100%;mask-image:radial-gradient(ellipse at center,#000 20%,transparent 70%);animation:opening-sweep 1.8s .1s both}
+@keyframes opening-line{from{opacity:0;transform:translateY(110%) rotate(3deg)}to{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes opening-trace{from{stroke-dashoffset:var(--trace-length)}to{stroke-dashoffset:0}}
+@keyframes opening-nodes{from{opacity:0}to{opacity:1}}
+@keyframes opening-sculpture{from{opacity:0;translate:0 20px}to{opacity:1;translate:0 0}}
+@keyframes opening-sweep{0%{opacity:0;background-position:100% 0}25%{opacity:1}100%{opacity:0;background-position:0 0}}
+html[data-hero-intro] .motion-paused .op-hero :is(h1,.op-sculpture){animation:none!important;opacity:1;translate:none;scale:none}
+@media(prefers-reduced-motion:reduce){html[data-hero-intro] .op-hero :is(h1,.op-sculpture){animation:none!important;opacity:1;translate:none;scale:none}}
+html[data-hero-intro] .motion-paused .op-hero *,html[data-hero-intro] .motion-paused .op-hero *::after{animation:none!important;stroke-dasharray:none!important}
+@media(prefers-reduced-motion:reduce){html[data-hero-intro] .op-hero *,html[data-hero-intro] .op-hero *::after{animation:none!important;stroke-dasharray:none!important}}

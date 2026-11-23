@@ -1,0 +1,82 @@
+/* Approved Ventures Pen layout, using the homepage shell and theme tokens. */
+.venture-page .venture-main{padding-top:154px}
+.venture-page .wrap{width:min(1240px,calc(100% - 112px))}
+.venture-page :is(h1,h2,h3){font-weight:400;letter-spacing:-.045em}
+.venture-page h1{font-size:clamp(48px,5vw,72px);line-height:1.25;margin:28px 0 32px}
+.venture-page h2{font-size:clamp(32px,3.4vw,48px);line-height:1.25;margin-bottom:36px;max-width:24ch}
+.venture-page h3{font-size:26px;line-height:1.35;margin-bottom:20px}
+.venture-page p,.venture-page li{font-size:18px;line-height:1.65;color:var(--muted)}
+.venture-page .eyebrow{font:10px/1.7 monospace;letter-spacing:.12em;color:var(--blue);margin-bottom:26px}
+.venture-page .venture-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center;padding-bottom:72px}
+.venture-hero-copy>p:not(.eyebrow){margin-bottom:24px}
+.venture-page .venture-condition{font-size:13px;margin-top:22px}
+.venture-partnership{padding:28px;border:1px solid var(--line);border-radius:28px;background:var(--surface);min-width:0}
+.venture-orbits{display:block;width:100%;height:auto;margin:24px 0 38px;overflow:visible;color:var(--blue)}
+.venture-orbits ellipse{fill:color-mix(in srgb,var(--blue) 3%,transparent);stroke:currentColor;stroke-width:1}
+.venture-orbits text{fill:currentColor;text-anchor:middle;font:10px monospace}
+.venture-signal{fill:currentColor;animation:venture-pulse 4s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.venture-signal:nth-of-type(2){animation-delay:2s}
+.venture-page .venture-partnership h2{font-size:32px;line-height:1.4;margin:0 0 30px;max-width:none}
+.venture-page .venture-boundaries{font-size:12px;line-height:1.7;margin:0}
+.venture-page .venture-section{border-top:1px solid var(--line);padding-block:64px 100px}
+.venture-columns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px;align-items:start}
+.venture-checklist{list-style:none;margin:0;padding:0}
+.venture-checklist li{padding-left:24px;position:relative;margin-bottom:22px;font-size:17px}
+.venture-checklist li:before{content:'\2014';position:absolute;left:0;color:var(--blue)}
+.venture-card,.venture-terms article{padding:28px;background:var(--surface);border-radius:24px;min-width:0}
+.venture-page main a:not(.primary-link){color:var(--blue);font-size:16px;display:inline-block;padding-block:8px}
+.venture-steps{list-style:none;margin:0;padding:0;display:grid;gap:36px}
+.venture-steps li{display:grid;grid-template-columns:52px 1fr;gap:22px}
+.venture-steps li>.eyebrow{padding-top:6px}
+.venture-steps li>div{display:grid;grid-template-columns:320px minmax(0,1fr);gap:36px}
+.venture-steps h3,.venture-steps p{margin:0}
+.venture-terms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;counter-reset:terms}
+.venture-terms article{counter-increment:terms}
+.venture-terms article:before{content:'0' counter(terms);display:block;color:var(--blue);font:10px monospace;margin-bottom:22px}
+.venture-terms p{font-size:17px;margin:0}
+.venture-example p:not(.eyebrow){max-width:85ch;font-size:24px}
+.venture-faq details{border-bottom:1px solid var(--line);padding:0;margin-bottom:22px;interpolate-size:allow-keywords}
+.venture-faq summary{list-style:none;padding:26px 42px 26px 0;position:relative;font-size:24px;line-height:1.4;cursor:pointer}
+.venture-faq summary::-webkit-details-marker{display:none}
+.venture-faq summary:after{content:'+';position:absolute;right:8px;top:26px;color:var(--blue)}
+.venture-faq details[open]>summary:after{content:'\2212'}
+.venture-faq details p{font-size:17px;max-width:96ch;margin:0;padding:0 32px 28px 0}
+@supports (interpolate-size:allow-keywords){.venture-faq details::details-content{height:0;overflow:clip;transition:height .35s ease,content-visibility .35s;transition-behavior:allow-discrete}.venture-faq details[open]::details-content{height:auto}}
+.venture-page .venture-ending{padding:48px;background:color-mix(in srgb,var(--electric) 10%,var(--paper));border-radius:28px;margin-bottom:60px}
+.venture-ending h2{max-width:28ch}.venture-ending p:not(.eyebrow){max-width:90ch}
+.venture-actions{display:flex;align-items:flex-start;flex-direction:column;gap:18px;margin-top:28px}
+.venture-page .primary-link{border-radius:40px;max-width:100%;white-space:normal}
+.venture-page>header:not(.enhanced)~main{padding-top:48px}
+@keyframes venture-pulse{50%{opacity:.35;transform:scale(.65)}}
+.venture-page.motion-paused .venture-signal{animation:none}
+.venture-page.motion-paused details::details-content{transition:none}
+@media(max-width:1000px){.venture-page .wrap{width:calc(100% - 64px)}.venture-page .venture-hero{gap:28px}.venture-steps li>div{grid-template-columns:250px minmax(0,1fr);gap:24px}.venture-page .venture-partnership h2{font-size:26px}}
+@media(max-width:700px){.venture-page .wrap{width:calc(100% - 40px)}.venture-page .venture-main{padding-top:128px}.venture-page .venture-hero,.venture-columns,.venture-terms{grid-template-columns:1fr}.venture-page .venture-hero{gap:48px;padding-bottom:64px}.venture-page h1{font-size:clamp(38px,11vw,48px);line-height:1.25}.venture-page h2{font-size:34px}.venture-page h3{font-size:25px}.venture-page p,.venture-page li{font-size:17px}.venture-page .venture-section{padding-block:48px 64px}.venture-steps li>div{display:block}.venture-steps h3{margin-bottom:16px}.venture-steps li{grid-template-columns:1fr;gap:8px}.venture-steps li>.eyebrow{margin:0}.venture-page .venture-ending{padding:28px}.venture-faq summary{font-size:21px}.venture-page .venture-example p:not(.eyebrow){font-size:19px}.venture-page .venture-partnership h2{font-size:26px}.venture-columns{gap:32px}.venture-page .venture-boundaries{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.venture-signal{animation:none}.venture-faq details::details-content{transition:none}}
+
+/* Effects approved in Pen storyboard U96PC. */
+.venture-partnership{position:relative;isolation:isolate;transition:transform .55s cubic-bezier(.2,.7,.2,1);background:radial-gradient(ellipse at 50% 34%,color-mix(in srgb,var(--electric) 12%,transparent),transparent 65%),var(--surface)}
+.venture-partnership:before{content:'';position:absolute;inset:8% 8% 35%;border-radius:50%;background:radial-gradient(ellipse,color-mix(in srgb,var(--blue) 16%,transparent),transparent 65%);z-index:-1;pointer-events:none;animation:venture-breathe 6s ease-in-out infinite}
+.venture-orbits ellipse{stroke-dasharray:1000;stroke-dashoffset:0;animation:venture-draw 1.8s cubic-bezier(.2,.7,.2,1) both}
+.venture-orbits ellipse:nth-child(2){animation-delay:.15s}
+.venture-core{fill:var(--surface);stroke:var(--blue);stroke-width:1;filter:drop-shadow(0 0 12px color-mix(in srgb,var(--blue) 25%,transparent))}
+.venture-signal{animation:none;filter:drop-shadow(0 0 5px var(--blue))}
+.venture-card,.venture-terms article{position:relative;isolation:isolate;transition:transform .35s ease,box-shadow .35s ease}
+.venture-card:after,.venture-terms article:after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(300px circle at var(--spot-x,50%) var(--spot-y,0%),color-mix(in srgb,var(--blue) 14%,transparent),transparent 75%);opacity:0;transition:opacity .35s;z-index:-1}
+.venture-arrow{display:inline-block;transition:transform .3s ease}
+.venture-faq summary:after{content:'+'!important;transition:rotate .35s ease}
+.venture-faq details[open]>summary:after{rotate:135deg}
+.venture-steps{position:relative;isolation:isolate}
+.venture-steps:before,.venture-steps:after{content:'';position:absolute;width:1px;left:21px;top:21px;height:var(--journey-span,calc(100% - 42px));background:var(--line);z-index:-1;pointer-events:none}
+.venture-steps:after{background:var(--blue);transform:scaleY(var(--journey-progress,1));transform-origin:top;box-shadow:0 0 12px color-mix(in srgb,var(--blue) 40%,transparent)}
+.venture-steps li>.eyebrow{display:grid;place-items:center;width:42px;height:42px;padding:0;margin:0;border:1px solid var(--line);background:var(--paper);border-radius:50%;transition:background .35s,color .35s,border-color .35s}
+.venture-steps li>div{padding-top:5px}
+.venture-step-active>.eyebrow{background:var(--electric)!important;color:#fff!important;border-color:var(--electric)!important}
+.venture-step-active h3{color:var(--ink)}
+@keyframes venture-draw{from{stroke-dashoffset:1000}to{stroke-dashoffset:0}}
+@keyframes venture-breathe{50%{opacity:.4;scale:.86}}
+@media(hover:hover) and (pointer:fine){.venture-page:not(.motion-paused) :is(.venture-card,.venture-terms article):hover{transform:translateY(-4px);box-shadow:0 16px 36px #00000012}.venture-page:not(.motion-paused) :is(.venture-card,.venture-terms article):hover:after{opacity:1}.venture-page:not(.motion-paused) .primary-link:hover .venture-arrow{transform:translate(3px,-3px)}}
+@media(max-width:700px){.venture-steps li{grid-template-columns:42px minmax(0,1fr);gap:18px}.venture-steps h3{font-size:23px}.venture-steps li p{font-size:16px}}
+.venture-page.motion-paused :is(.venture-partnership:before,.venture-orbits ellipse){animation:none}
+.venture-page.motion-paused :is(.venture-partnership,.venture-card,.venture-terms article,.venture-arrow,.venture-faq summary:after,.venture-steps li>.eyebrow){transition:none}
+@media(prefers-reduced-motion:reduce){.venture-partnership:before,.venture-orbits ellipse{animation:none!important}.venture-page :is(.venture-partnership,.venture-card,.venture-terms article,.venture-arrow,.venture-faq summary:after,.venture-steps li>.eyebrow){transition:none!important;transform:none!important}.venture-card:after,.venture-terms article:after{display:none}}

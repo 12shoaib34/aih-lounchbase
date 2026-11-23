@@ -13,7 +13,7 @@ test("public and product pages share the hydrated document", async ({ page }) =>
   await page.getByRole("link", { name: "Account" }).click();
   await expect(page.getByRole("heading", { name: "Account" })).toBeVisible();
   await page.getByRole("link", { name: "Return to work" }).click();
-  await expect(page.getByRole("heading", { name: "Selected work" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "SabiWorkers." })).toBeVisible();
   expect(documents).toEqual([]);
   await expect(page.locator("html")).toHaveAttribute("data-fixture", "original");
 });
@@ -42,7 +42,7 @@ test("dirty fixture can cancel, recover across history and reload, and discard",
 test("direct entry, HTML, Hono and missing URLs", async ({ request }) => {
   const work = await request.get("/work");
   expect(work.status()).toBe(200);
-  expect(await work.text()).toContain("<h2>FoodChoo</h2>");
+  expect(await work.text()).toContain("<h3>FoodChoo</h3>");
   const account = await request.get("/app");
   expect(account.url()).toMatch(/\/app\/account$/);
   expect(await account.text()).toContain("noindex");

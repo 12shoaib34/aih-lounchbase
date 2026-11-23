@@ -11,9 +11,9 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
 - [x] **2. Prove one runtime and proper routing**
   - [x] Create one Next root with site and product layouts, Work, account and a Hono endpoint.
   - [x] Verify one build, Worker preview, direct refresh, no-reload transitions, 404s and dirty-editor behavior.
-- [ ] **3. Port the approved public design**
-  - [ ] Migrate the home sections, five Work cards, menus and interactions.
-  - [ ] Migrate the seven public detail pages and verify responsive, keyboard and motion parity.
+- [x] **3. Port the approved public design**
+  - [x] Migrate the home sections, five Work cards, menus and interactions.
+  - [x] Migrate the seven public detail pages and verify responsive, keyboard and motion parity.
 - [ ] **4. Restore public data journeys**
   - [ ] Verify paid and venture enquiries, persistence, retries, fallback and notifications.
   - [ ] Verify public blog, metadata, sitemap, aliases, unavailable and missing states.

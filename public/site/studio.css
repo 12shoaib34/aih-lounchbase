@@ -1,0 +1,65 @@
+/* Studio: approved Pen layout Wom66/ivUFY and motion direction P7sQs2. */
+.studio-page .studio-main{padding-top:154px}
+.studio-page .wrap{width:min(1240px,calc(100% - 112px))}
+.studio-page :is(h1,h2,h3){font-weight:400;letter-spacing:-.04em;color:var(--ink)}
+.studio-page h1{font-size:clamp(48px,5vw,72px);line-height:1.25;margin:28px 0 32px}
+.studio-page h2{font-size:clamp(32px,3.4vw,48px);line-height:1.25;margin-bottom:36px}
+.studio-page h3{font-size:26px;line-height:1.35;margin-bottom:20px}
+.studio-page p,.studio-page li{font-size:18px;line-height:1.65;color:var(--muted)}
+.studio-page .eyebrow{font:10px/1.7 monospace;letter-spacing:.12em;color:var(--blue);margin-bottom:26px}
+.studio-page .studio-hero{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px;align-items:center;padding-bottom:72px}
+.studio-art{padding:28px;border:1px solid var(--line);border-radius:28px;background:radial-gradient(ellipse at 50% 45%,color-mix(in srgb,var(--electric) 8%,transparent),transparent 70%),var(--surface);transition:transform .55s cubic-bezier(.2,.7,.2,1);min-width:0}
+.studio-page .studio-art h2{font-size:31px;line-height:1.4;margin-bottom:26px}
+.studio-gates{display:grid;gap:12px}
+.studio-gate{padding:20px;border:1px solid var(--line);border-radius:16px;background:var(--paper);transition:border-color .6s,background .6s,box-shadow .6s}
+.studio-gate .eyebrow{margin:0 0 12px}
+.studio-page .studio-gate h3{font-size:23px;margin:0}
+.studio-gate-active{border-color:var(--blue);background:color-mix(in srgb,var(--blue) 8%,var(--surface));box-shadow:0 0 32px color-mix(in srgb,var(--blue) 10%,transparent)}
+.studio-connector{position:relative;width:1px;height:24px;background:var(--line);margin:auto}
+.studio-connector i{position:absolute;left:-3px;top:0;width:7px;height:7px;transform:translateY(-50%);border-radius:50%;background:var(--blue);box-shadow:0 0 12px var(--blue)}
+.studio-page .studio-art-note{font-size:13px;margin:24px 0 0}
+.studio-page .studio-section{padding-block:64px 100px;border-top:1px solid var(--line)}
+.studio-page .studio-stage-nav{position:static;inset:auto;display:flex;flex-wrap:wrap;gap:8px 18px;margin:0 0 38px;width:auto;max-width:none;padding:0;background:transparent;border:0;box-shadow:none;transform:none}
+.studio-stage-nav a{padding:10px 14px;border-radius:24px;font-size:14px;color:var(--muted);text-decoration:none;min-height:44px;display:inline-flex;align-items:center;gap:8px;border:1px solid transparent}
+.studio-stage-nav a[aria-current=step]{background:color-mix(in srgb,var(--blue) 10%,var(--surface));color:var(--blue);border-color:var(--line)}
+.studio-steps{position:relative;isolation:isolate;list-style:none;margin:0;padding:0;display:grid;gap:32px}
+.studio-steps:before,.studio-steps:after{content:'';position:absolute;width:1px;left:21px;top:21px;height:var(--journey-span,calc(100% - 42px));background:var(--line);z-index:-1;pointer-events:none}
+.studio-steps:after{background:var(--blue);transform:scaleY(var(--journey-progress,1));transform-origin:top}
+.studio-steps li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:24px;scroll-margin-top:140px}
+.studio-steps li>.eyebrow{display:grid;place-items:center;width:42px;height:42px;padding:0;margin:0;border:1px solid var(--line);border-radius:50%;background:var(--paper);transition:background .35s,color .35s}
+.studio-step-active>.eyebrow{background:var(--electric)!important;color:#fff!important;border-color:var(--electric)!important}
+.studio-steps li>div{display:grid;grid-template-columns:290px minmax(0,1fr);gap:16px 32px;padding:4px 0 30px;border-bottom:1px solid var(--line)}
+.studio-steps h3{grid-row:span 2;margin:0}
+.studio-steps p{font-size:17px;margin:0}
+.studio-page .studio-output{padding:20px;border-radius:14px;background:color-mix(in srgb,var(--blue) 8%,var(--surface));font-size:15px;color:var(--blue)}
+.studio-split{display:grid;gap:28px}
+.studio-example-card{padding:28px;border:1px solid var(--line);border-radius:24px;background:var(--surface)}
+.studio-example-card>p:last-child{font-size:15px}
+.studio-checklist{list-style:none;padding:0;margin:24px 0}
+.studio-checklist li{position:relative;padding-left:28px;margin-bottom:18px;font-size:17px}
+.studio-checklist li:before{content:'\2713';position:absolute;left:0;color:var(--blue)}
+.studio-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.studio-cards article{padding:24px;background:var(--surface);border-radius:22px;min-width:0}
+.studio-cards p{font-size:17px;margin:0}
+.studio-example-card,.studio-cards article{position:relative;isolation:isolate;transition:transform .35s,box-shadow .35s}
+.studio-example-card:after,.studio-cards article:after{content:'';position:absolute;inset:0;border-radius:inherit;z-index:-1;pointer-events:none;background:radial-gradient(300px circle at var(--spot-x,50%) var(--spot-y,0%),color-mix(in srgb,var(--blue) 14%,transparent),transparent 75%);opacity:0;transition:opacity .35s}
+.studio-faq details{border-bottom:1px solid var(--line);padding:0;margin-bottom:22px;interpolate-size:allow-keywords}
+.studio-faq summary{list-style:none;padding:26px 42px 26px 0;position:relative;font-size:24px;line-height:1.4;cursor:pointer}
+.studio-faq summary::-webkit-details-marker{display:none}
+.studio-faq summary:after{content:'+';position:absolute;right:8px;top:26px;color:var(--blue);transition:rotate .35s}
+.studio-faq details[open]>summary:after{rotate:135deg}
+.studio-faq details p{font-size:17px;margin:0;padding:0 32px 28px 0;max-width:96ch}
+@supports(interpolate-size:allow-keywords){.studio-faq details::details-content{height:0;overflow:clip;transition:height .35s ease,content-visibility .35s;transition-behavior:allow-discrete}.studio-faq details[open]::details-content{height:auto}}
+.studio-page .studio-ending{padding:48px;background:color-mix(in srgb,var(--electric) 10%,var(--paper));border:0;border-radius:28px;margin-bottom:60px}
+.studio-ending h2{max-width:25ch}.studio-ending p{max-width:90ch}
+.studio-actions{display:flex;flex-direction:column;align-items:start;gap:22px;margin-top:28px}
+.studio-actions>a:not(.primary-link){color:var(--blue);font-size:16px;padding-block:8px}
+.studio-page .primary-link{border-radius:40px;max-width:100%;white-space:normal}
+.studio-arrow{display:inline-block;transition:transform .3s}
+.studio-page>header:not(.enhanced)~main{padding-top:48px}
+@media(hover:hover) and (pointer:fine){.studio-page:not(.motion-paused) :is(.studio-example-card,.studio-cards article):hover{transform:translateY(-4px);box-shadow:0 16px 36px #00000012}.studio-page:not(.motion-paused) :is(.studio-example-card,.studio-cards article):hover:after{opacity:1}.studio-page:not(.motion-paused) .primary-link:hover .studio-arrow{transform:translate(3px,-3px)}}
+@media(max-width:1000px){.studio-page .wrap{width:calc(100% - 64px)}.studio-page .studio-hero{gap:28px}.studio-steps li>div{grid-template-columns:240px minmax(0,1fr);gap:16px 24px}.studio-cards{grid-template-columns:1fr}.studio-page .studio-art h2{font-size:26px}}
+@media(max-width:700px){.studio-page .wrap{width:calc(100% - 40px)}.studio-page .studio-main{padding-top:128px}.studio-page .studio-hero{grid-template-columns:1fr;gap:48px;padding-bottom:64px}.studio-page h1{font-size:clamp(38px,11vw,48px)}.studio-page h2{font-size:34px}.studio-page h3{font-size:25px}.studio-page p{font-size:17px}.studio-page .studio-section{padding-block:48px 64px}.studio-stage-nav{gap:6px}.studio-stage-nav a{font-size:12px;padding:9px 11px}.studio-steps li{gap:16px;scroll-margin-top:110px}.studio-steps li>div{display:block}.studio-steps h3{font-size:23px;margin-bottom:20px}.studio-steps p{font-size:16px;margin-bottom:18px}.studio-steps .studio-output{font-size:14px;padding:16px;margin:0}.studio-page .studio-ending{padding:28px}.studio-faq summary{font-size:21px}.studio-page .studio-gate h3{font-size:20px}}
+.studio-page.motion-paused :is(.studio-art,.studio-gate,.studio-example-card,.studio-cards article,.studio-arrow,.studio-faq summary:after,.studio-steps li>.eyebrow){transition:none}
+.studio-page.motion-paused details::details-content{transition:none}
+@media(prefers-reduced-motion:reduce){.studio-page :is(.studio-art,.studio-gate,.studio-example-card,.studio-cards article,.studio-arrow,.studio-faq summary:after,.studio-steps li>.eyebrow){transition:none!important;transform:none!important}.studio-example-card:after,.studio-cards article:after{display:none}.studio-faq details::details-content{transition:none}}
