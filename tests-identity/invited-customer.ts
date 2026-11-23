@@ -1,3 +1,4 @@
+import { checkContactsAndFiles } from "./contacts-files";
 import { checkAdminModules } from "./admin-modules";
 import { createOTP } from "@better-auth/utils/otp";
 import { base32 } from "@better-auth/utils/base32";
@@ -121,6 +122,7 @@ export async function checkInvitation(
     await expect(guest.getByText("Signed in as staff.")).toBeVisible();
     expect((await guest.request.get("/api/team")).status()).toBe(403);
     await checkAdminModules(owner, guest, email, sql);
+    await checkContactsAndFiles(owner, guest, email, sql);
     const [user] = await sql`SELECT id FROM "user" WHERE email=${email}`;
     const recoveryArgs = [
       "scripts/recover-mfa.mjs",

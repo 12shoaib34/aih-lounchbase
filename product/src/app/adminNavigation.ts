@@ -9,6 +9,18 @@ const destinations: {
   ownerOnly?: boolean;
 }[] = [
   {
+    to: "/admin/contacts",
+    label: "Contacts",
+    group: "Business",
+    permission: "contacts:read",
+  },
+  {
+    to: "/admin/files",
+    label: "Files",
+    group: "Workspace",
+    permission: "files:read",
+  },
+  {
     to: "/admin/accounts",
     label: "Accounts",
     group: "Administration",

@@ -22,7 +22,7 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
   - [x] Verify role boundaries, callbacks, deep links and session isolation.
 - [ ] **6. Migrate Launchbase modules**
   - [x] Team, accounts, business settings and audit.
-  - [ ] Contacts and private files.
+  - [x] Contacts and private files.
   - [ ] Notifications and jobs.
   - [ ] Scheduling and bookings.
   - [ ] Billing, invoices and webhooks.

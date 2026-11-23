@@ -5,6 +5,8 @@ import { connectDatabase } from "./database";
 import { profileInput } from "../shared/profile";
 import { authenticate, ApiFault, type AppEnv } from "./access";
 import { team } from "./team";
+import { contacts } from "./contacts";
+import { files } from "./files";
 import { audit } from "./audit";
 import { business } from "./business";
 import { admin } from "./admin";
@@ -62,6 +64,8 @@ app.get("/api/access", authenticate, (c) =>
 );
 app.route("/api/admin", admin);
 app.route("/api/team", team);
+app.route("/api/contacts", contacts);
+app.route("/api/files", files);
 app.route("/api/business", business);
 app.route("/api/audit", audit);
 app.route("/api/records", records);

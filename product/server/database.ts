@@ -2,10 +2,15 @@ import postgres from "postgres";
 
 export type DatabaseBindings = {
   FILES?: {
-    put(key: string, value: ArrayBuffer): Promise<unknown>;
+    put(
+      key: string,
+      value: ArrayBuffer,
+      options?: { onlyIf: Headers; customMetadata: Record<string, string> },
+    ): Promise<unknown>;
     get(key: string): Promise<{
       size?: number;
       version?: string;
+      customMetadata?: Record<string, string>;
       arrayBuffer(): Promise<ArrayBuffer>;
     } | null>;
     head?(key: string): Promise<{ size: number } | null>;
