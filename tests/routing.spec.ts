@@ -28,3 +28,24 @@ test("direct entry, HTML, Hono and missing URLs", async ({ request }) => {
   expect(await (await request.get("/api/health")).json()).toEqual({ status: "ok" });
   for (const url of ["/missing", "/app/missing"]) expect((await request.get(url)).status()).toBe(404);
 });
+
+test("Home, detail pages, the Ventures section and account keep the same document", async ({page}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.waitForFunction(() => history.state?.__NA);
+  await page.evaluate(() => { document.documentElement.dataset.routeProof = "same"; });
+  const documents: string[] = [];
+  page.on("request", request => {
+    if (request.resourceType() === "document" && request.frame() === page.mainFrame()) documents.push(request.url());
+  });
+  for (const [selector,path] of [
+    ['#work a[href="/work"]', "/work"], ['footer a[href="/services"]', "/services"],
+    ['footer a[href="/blog"]', "/blog"], ['footer a[href="/#ventures"]', "/#ventures"],
+    ['footer a[href="/app/account"]', "/app/account"], ['a[href="/work"]', "/work"],
+  ]) {
+    await page.locator(selector).first().click();
+    await page.waitForURL(url => url.pathname + url.hash === path);
+  }
+  await expect(page.locator("html")).toHaveAttribute("data-route-proof", "same");
+  expect(documents).toEqual([]);
+});

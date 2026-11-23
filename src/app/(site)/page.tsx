@@ -21,7 +21,7 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html:
-            '{"@context":"https://schema.org","@type":"Organization","@id":"https://appsinhours.com/#organization","name":"AppsInHours","url":"https://appsinhours.com/","logo":"https://appsinhours.com/brand-monogram-light.svg","email":"inquiry@appsinhours.com","description":"Software engineering studio building custom web applications, mobile applications, SaaS platforms and business software."}',
+            '{"@context":"https://schema.org","@type":"Organization","@id":"https://appsinhours.com/#organization","name":"AppsInHours","url":"https://appsinhours.com/","logo":"https://appsinhours.com/site/brand-monogram-light.svg","email":"inquiry@appsinhours.com","description":"Software engineering studio building custom web applications, mobile applications, SaaS platforms and business software."}',
         }}
       />
 

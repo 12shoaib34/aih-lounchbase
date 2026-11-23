@@ -48,6 +48,11 @@ test("built public metadata, route boundaries and cold homepage assets", async (
           .innerText(),
       );
       expect(structured["@context"]).toBe("https://schema.org");
+      if (route === "/") {
+        const logo = await request.get(new URL(structured.logo).pathname);
+        expect(logo.status()).toBe(200);
+        expect(logo.headers()["content-type"]).toContain("image/svg+xml");
+      }
     }
     if (route === "/") {
       const scripts = await page
