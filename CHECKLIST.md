@@ -14,9 +14,9 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
 - [x] **3. Port the approved public design**
   - [x] Migrate the home sections, five Work cards, menus and interactions.
   - [x] Migrate the seven public detail pages and verify responsive, keyboard and motion parity.
-- [ ] **4. Restore public data journeys**
-  - [ ] Verify paid and venture enquiries, persistence, retries, fallback and notifications.
-  - [ ] Verify public blog, metadata, sitemap, aliases, unavailable and missing states.
+- [x] **4. Restore public data journeys**
+  - [x] Verify paid and venture enquiries, persistence, retries, fallback and notifications.
+  - [x] Verify public blog, metadata, sitemap, aliases, unavailable and missing states.
 - [ ] **5. Migrate Launchbase identity and shells**
   - [ ] Port account, invite, auth, MFA, personal/staff layouts and reference records.
   - [ ] Verify role boundaries, callbacks, deep links and session isolation.

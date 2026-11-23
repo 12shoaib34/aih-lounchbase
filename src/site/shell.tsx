@@ -169,6 +169,7 @@ export default function Shell({ children }: { children: ReactNode }) {
         mounts.push(
           await import("./behavior/brief-context"),
           await import("./behavior/contact"),
+          await import("./behavior/enquiry"),
         );
       if (scope.active) {
         for (const module of mounts) module.default(scope);
@@ -183,7 +184,7 @@ export default function Shell({ children }: { children: ReactNode }) {
     <div
       ref={root}
       className={
-        "site-shell ui-system marketing onepage " + (classes[slug] ?? "")
+        "site-shell ui-system marketing onepage " + (slug.split("/")[0] === "blog" ? "blog-shell" : classes[slug] ?? "")
       }
     >
       <div className="opening-loader">
