@@ -13,6 +13,7 @@ import { InvitePage } from "./features/account/InvitePage";
 import { TwoFactorPage } from "./features/account/TwoFactorPage";
 import { SecurityPage } from "./features/account/SecurityPage";
 import { WorkspacePage } from "./features/workspace/WorkspacePage";
+import { AdminOverview } from "./features/admin/AdminOverview";
 import { adminNavigation } from "./app/adminNavigation";
 
 function Guest({ children }: { children: ReactNode }) {
@@ -104,7 +105,7 @@ export function Administration() {
         ) : (
           <>
             <p>Signed in as {access.data?.teamRole}.</p>
-            <NextLink href="/app/account">Open your profile</NextLink>
+            <AdminOverview access={access.data!} />
           </>
         )}
       </section>

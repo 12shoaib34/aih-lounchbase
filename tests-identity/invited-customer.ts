@@ -1,3 +1,4 @@
+import { checkAdminModules } from "./admin-modules";
 import { createOTP } from "@better-auth/utils/otp";
 import { base32 } from "@better-auth/utils/base32";
 import { execFileSync } from "node:child_process";
@@ -119,7 +120,7 @@ export async function checkInvitation(
     await expect(guest).toHaveURL(/\/app\/admin$/);
     await expect(guest.getByText("Signed in as staff.")).toBeVisible();
     expect((await guest.request.get("/api/team")).status()).toBe(403);
-    await guest.screenshot({ path: "/tmp/aih-step5-staff.png" });
+    await checkAdminModules(owner, guest, email, sql);
     const [user] = await sql`SELECT id FROM "user" WHERE email=${email}`;
     const recoveryArgs = [
       "scripts/recover-mfa.mjs",

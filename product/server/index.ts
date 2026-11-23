@@ -5,6 +5,8 @@ import { connectDatabase } from "./database";
 import { profileInput } from "../shared/profile";
 import { authenticate, ApiFault, type AppEnv } from "./access";
 import { team } from "./team";
+import { audit } from "./audit";
+import { business } from "./business";
 import { admin } from "./admin";
 import { records } from "./records";
 const app = new Hono<AppEnv>();
@@ -60,6 +62,8 @@ app.get("/api/access", authenticate, (c) =>
 );
 app.route("/api/admin", admin);
 app.route("/api/team", team);
+app.route("/api/business", business);
+app.route("/api/audit", audit);
 app.route("/api/records", records);
 app.use("/api/profile", authenticate);
 app.get("/api/profile", async (c) => {

@@ -21,7 +21,7 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
   - [x] Port account, invite, auth, MFA, personal/staff layouts and reference records.
   - [x] Verify role boundaries, callbacks, deep links and session isolation.
 - [ ] **6. Migrate Launchbase modules**
-  - [ ] Team, accounts, business settings and audit.
+  - [x] Team, accounts, business settings and audit.
   - [ ] Contacts and private files.
   - [ ] Notifications and jobs.
   - [ ] Scheduling and bookings.

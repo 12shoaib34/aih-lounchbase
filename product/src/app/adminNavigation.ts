@@ -7,7 +7,32 @@ const destinations: {
   group: string;
   permission?: Permission;
   ownerOnly?: boolean;
-}[] = [];
+}[] = [
+  {
+    to: "/admin/accounts",
+    label: "Accounts",
+    group: "Administration",
+    permission: "users:read",
+  },
+  {
+    to: "/admin/team",
+    label: "Team",
+    group: "Administration",
+    ownerOnly: true,
+  },
+  {
+    to: "/admin/business",
+    label: "Business settings",
+    group: "Administration",
+    ownerOnly: true,
+  },
+  {
+    to: "/admin/audit",
+    label: "Audit trail",
+    group: "Administration",
+    ownerOnly: true,
+  },
+];
 export function adminNavigation(access?: {
   teamRole: "owner" | "staff" | null;
   permissions: readonly Permission[];
