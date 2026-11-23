@@ -94,6 +94,7 @@ export function InvoiceHistoryLayout({
           }
         >
           <option value="all">All statuses</option>
+          <option value="outstanding">Outstanding</option>
           <option value="draft">Draft</option>
           <option value="issued">Issued</option>
           <option value="paid">Paid</option>
@@ -175,14 +176,15 @@ export function InvoiceHistoryResults({
           {
             key: "due",
             label: "Due date",
-            render: (row) => row.dueDate || "—",
+            render: (row) =>
+              row.overdue ? `${row.dueDate} · Overdue` : row.dueDate || "—",
           },
           {
             key: "status",
             label: "Status",
             render: (row) => (
               <span className={`billing-status billing-status-${row.status}`}>
-                {row.status}
+                {row.partial ? "Partially paid" : row.status}
               </span>
             ),
           },

@@ -16,7 +16,7 @@ export async function checkProductPages(
   const page = await owner.context().newPage();
   try {
     for (const [route, heading] of [
-      ["admin/scheduling", "Scheduling"],
+      ["admin/inquiries", "Inquiries"],
       ["admin/notifications", "Scheduled notifications"],
       ["admin/billing", "Billing"],
       ["admin/billing/new", "New invoice"],
@@ -53,9 +53,37 @@ export async function checkProductPages(
     await expect(
       page.getByRole("heading", { name: /Edit draft/ }).first(),
     ).toBeVisible();
+    await page.goto(origin + "/app/admin/billing/" + id);
+    await page
+      .getByRole("button", { name: "Issue invoice", exact: true })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Issue invoice" })
+      .click();
+    const record = page.getByRole("button", {
+      name: "Record payment",
+      exact: true,
+    });
+    await record.click();
+    const dialog = page.getByRole("dialog", { name: "Record payment" });
+    await dialog.getByLabel(/^Amount/).fill("1");
+    await dialog.getByLabel("Payment reference").fill("Transfer A");
+    await dialog.getByRole("button", { name: "Record payment" }).click();
+    await expect(page.locator(".invoice-status")).toHaveText("Partially paid");
+    await staff.goto(origin + "/app/account/billing");
+    const invoice = staff
+      .getByRole("article")
+      .filter({ hasText: "Partially paid" });
+    await expect(invoice).toContainText("99.00");
+    await invoice.getByText("Payment history").click();
+    await expect(invoice).toContainText("Bank transfer");
+    await record.click();
+    await dialog.getByLabel("Payment reference").fill("Transfer B");
+    await dialog.getByRole("button", { name: "Record payment" }).click();
+    await expect(page.locator(".invoice-status")).toHaveText("paid");
     for (const [route, heading] of [
       ["billing", "My billing"],
-      ["bookings", "My bookings"],
       ["notifications", "Notifications"],
     ]) {
       await staff.goto(origin + "/app/account/" + route);

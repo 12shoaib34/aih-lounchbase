@@ -79,10 +79,18 @@ function Billing() {
             <article className="component-card" key={invoice.id}>
               <h2>
                 Invoice {invoice.number} ·{" "}
-                {formatMoney(invoice.amount, invoice.currency)}
+                {formatMoney(invoice.total ?? invoice.amount, invoice.currency)}
               </h2>
               <p>
-                {invoice.customerName} · {invoice.status}
+                {invoice.customerName} ·{" "}
+                {invoice.partial ? "Partially paid" : invoice.status}
+              </p>
+              <p>
+                Balance due:{" "}
+                {formatMoney(
+                  invoice.status === "issued" ? invoice.amount : 0,
+                  invoice.currency,
+                )}
               </p>
               <ul>
                 {invoice.items.map((item, index) => (
@@ -92,6 +100,20 @@ function Billing() {
                   </li>
                 ))}
               </ul>
+              {!!invoice.receipts?.length && (
+                <details>
+                  <summary>Payment history</summary>
+                  <ul>
+                    {invoice.receipts.map((receipt, index) => (
+                      <li key={index}>
+                        {receipt.date} ·{" "}
+                        {formatMoney(receipt.amount, invoice.currency)} ·{" "}
+                        {receipt.method}
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
               {invoice.paymentSource && (
                 <p>
                   Payment recorded through{" "}

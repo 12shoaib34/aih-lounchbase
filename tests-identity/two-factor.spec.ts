@@ -1,3 +1,4 @@
+import {fixtureDatabase} from "../scripts/identity-endpoints.mjs";
 import { checkInvitation } from "./invited-customer";
 import { test, expect } from "@playwright/test";
 import { randomUUID } from "node:crypto";
@@ -9,7 +10,7 @@ import postgres from "postgres";
 // Rate-limit enforcement remains enabled during the actual test.
 test.beforeAll(async () => {
   const sql = postgres(
-    "postgres://postgres:postgres@127.0.0.1:54441/identity_fixture",
+    fixtureDatabase,
   );
   try {
     await sql`DELETE FROM "rateLimit"`;
@@ -25,7 +26,7 @@ test("authenticator enrollment and recovery-code sign-in work through Workers", 
   browser,
 }) => {
   const sql = postgres(
-    "postgres://postgres:postgres@127.0.0.1:54441/identity_fixture",
+    fixtureDatabase,
   );
   const email = `browser-factor-${randomUUID()}@example.com`;
   const password = "A browser two-factor password 123!";

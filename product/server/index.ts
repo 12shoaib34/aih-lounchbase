@@ -1,3 +1,4 @@
+import { enquiryAdmin, tracking } from "./enquiries";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { authConfiguration, createAuth } from "./auth";
@@ -11,7 +12,7 @@ import { audit } from "./audit";
 import { business } from "./business";
 import { admin } from "./admin";
 import { records } from "./records";
-import { scheduling } from "./scheduling";
+import { inquiries } from "./inquiries";
 import { notifications, notificationJobs } from "./notifications";
 import { billing, billingWebhook } from "./billing";
 const app = new Hono<AppEnv>();
@@ -65,11 +66,13 @@ app.get("/api/access", authenticate, (c) =>
     permissions: c.get("permissions"),
   }),
 );
+app.route("/api/admin/enquiries", enquiryAdmin);
+app.route("/api/tracking", tracking);
 app.route("/api/admin", admin);
 app.route("/api/team", team);
 app.route("/api/notifications", notifications);
 app.route("/api/notification-jobs", notificationJobs);
-app.route("/api/scheduling", scheduling);
+app.route("/api/inquiries", inquiries);
 app.route("/api/billing", billing);
 app.route("/api/billing-webhook", billingWebhook);
 app.route("/api/contacts", contacts);

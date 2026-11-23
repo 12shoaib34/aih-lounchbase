@@ -45,7 +45,7 @@ export default function Page() {
           <h1 data-copy={"copy-1"}>How we handle project enquiries</h1>
           <p data-copy={"privacy-v2-enquiry-intro"}>
             When you submit an enquiry, we store your contact details and
-            project brief in our private studio database. We use an email
+            project brief in our private studio database. We email a private sign-in link so you can check the status of your enquiry. We use an email
             provider to notify our team.
           </p>
         </section>

@@ -5,8 +5,11 @@ export type DatabaseBindings = {
     put(
       key: string,
       value: ArrayBuffer,
-      options?: { onlyIf: Headers; customMetadata: Record<string, string> },
-    ): Promise<unknown>;
+      options?: {
+        onlyIf: Headers;
+        customMetadata: Record<string, string>;
+      },
+    ): Promise<{ size: number } | null>;
     get(key: string): Promise<{
       size?: number;
       version?: string;

@@ -497,14 +497,15 @@ const uploadFile =
           JSON.stringify([c.get("userId"), id.data, name, type.data, checksum]),
         ).buffer,
       );
+      const uploadIdentity = await digest(new TextEncoder().encode(JSON.stringify([id.data,c.get("userId"),name,type.data,checksum])).buffer);
       const written = await bucket.put(id.data, bytes, {
         onlyIf: new Headers({ "If-None-Match": "*" }),
-        customMetadata: { uploadReceipt: receipt },
+        customMetadata: { uploadReceipt: receipt, uploadIdentity },
       });
       if (!written) {
         const leftover = await bucket.get(id.data);
         if (
-          leftover?.customMetadata?.uploadReceipt !== receipt ||
+          !leftover || (leftover.customMetadata?.uploadReceipt !== receipt && leftover.customMetadata?.uploadIdentity !== uploadIdentity) ||
           leftover.size !== bytes.byteLength ||
           (await digest(await leftover.arrayBuffer())) !== checksum
         )

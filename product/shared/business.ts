@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 const short = z.string().trim().max(160);
-const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
+const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Enter a time.");
 const hours = z
   .object({ day: z.number().int().min(0).max(6), opens: time, closes: time })
-  .refine(
-    (value) => value.opens < value.closes,
-    "Closing time must follow opening time; split overnight hours across days.",
-  );
+  .refine((value) => value.opens < value.closes, {
+    message:
+      "Closing time must follow opening time; split overnight hours across days.",
+    path: ["closes"],
+  });
 const optionalText = (max: number) => z.string().trim().max(max).default("");
 export const businessLogo = z
   .string()
@@ -114,10 +115,12 @@ export const businessInput = z.strictObject({
                   items[i].opens < items[j].closes &&
                   items[j].opens < items[i].closes
                 )
-                  context.addIssue({
-                    code: "custom",
-                    message: "Opening periods must not overlap.",
-                  });
+                  for (const index of [i, j])
+                    context.addIssue({
+                      code: "custom",
+                      path: [index, "opens"],
+                      message: "Opening periods must not overlap.",
+                    });
           }),
       }),
     )

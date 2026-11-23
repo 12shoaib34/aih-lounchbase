@@ -36,15 +36,10 @@ export function AccountNavigation({ userId }: { userId: string }) {
       <section>
         <h2>My workspace</h2>
         <ul>
+          <li><Link to="/account/enquiries">My enquiries</Link></li>
           <li>
             <Link to="/workspace">
               <span>Open my workspace</span>
-              <span aria-hidden="true">→</span>
-            </Link>
-          </li>
-          <li>
-            <Link to="/account/bookings">
-              <span>My bookings</span>
               <span aria-hidden="true">→</span>
             </Link>
           </li>

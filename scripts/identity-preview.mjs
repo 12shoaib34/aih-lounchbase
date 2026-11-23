@@ -1,3 +1,4 @@
+import {port,dbPort,origin,fixtureDatabase} from "./identity-endpoints.mjs";
 // Disposable local auth environment with a private test mailbox and database.
 import EmbeddedPostgres from "embedded-postgres";
 import { spawn } from "node:child_process";
@@ -11,12 +12,12 @@ const db = new EmbeddedPostgres({
   databaseDir: join(directory, "db"),
   user: "postgres",
   password: "postgres",
-  port: 54441,
+  port: dbPort,
   persistent: false,
   onLog: () => {},
 });
 const DATABASE_URL =
-  "postgres://postgres:postgres@127.0.0.1:54441/identity_fixture";
+  fixtureDatabase;
 let worker;
 try {
   await db.initialise();
@@ -33,7 +34,8 @@ try {
   const settings = {
     DATABASE_URL,
     AUTH_SECRET: randomBytes(48).toString("hex"),
-    AUTH_BASE_URL: "http://127.0.0.1:8841",
+    AUTH_BASE_URL: origin,
+    PUBLIC_ORIGIN:origin, TURNSTILE_SECRET:"local-fixture",TURNSTILE_SITE_KEY:"local-fixture",
     AUTH_EMAIL_MODE: "outbox",
     AUTH_ALLOW_SIGNUP: "true",
     AUTH_ADMIN_MFA_REQUIRED: "true",
@@ -52,9 +54,11 @@ try {
     [
       "node_modules/wrangler/bin/wrangler.js",
       "dev",
+      "scripts/identity-fixture-worker.ts",
       "--local",
+      "--ip","127.0.0.1",
       "--port",
-      "8841",
+      String(port),
       "--env-file",
       vars,
       "--log-level",
@@ -65,7 +69,7 @@ try {
   process.once("SIGTERM", () => worker.kill());
   process.once("SIGINT", () => worker.kill());
   console.log(
-    "Disposable identity preview at http://127.0.0.1:8841/app/account",
+    "Disposable website preview at "+origin+"/website-template",
   );
   process.exitCode = (await once(worker, "exit"))[0] ?? 0;
 } finally {

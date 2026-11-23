@@ -8,15 +8,36 @@ import { authenticate, allowed, ApiFault, type AppEnv } from "./access";
 import { connectDatabase } from "./database";
 import {
   invoiceListQuery,
+  manualPaymentMethod,
   invoiceInput,
   invoiceTotals,
   invoiceDraftUpdate,
   invoiceDocument,
 } from "../shared/billing";
 
-// Stripe represents whole ISK and UGX charges in hundredths.
-export function providerAmount(amount: number, currency: string) {
-  return /^(ISK|UGX)$/i.test(currency) ? amount * 100 : amount;
+// Stripe represents whole ISK and UGX amounts with two trailing zeroes.
+export function stripeAmount(amount: number, currency: string) {
+  return ["ISK", "UGX"].includes(currency.toUpperCase())
+    ? amount * 100
+    : amount;
+}
+
+function rejectedCheckoutInput(error: unknown) {
+  if (
+    !(error instanceof Stripe.errors.StripeInvalidRequestError) ||
+    error.statusCode !== 400
+  )
+    return false;
+  if (
+    ["amount_too_small", "amount_too_large", "currency_not_supported"].includes(
+      error.code ?? "",
+    )
+  )
+    return true;
+  return (
+    error.param === "line_items[0][price_data][currency]" &&
+    (!error.code || error.code === "parameter_invalid_enum")
+  );
 }
 
 const stripe = (env: AppEnv["Bindings"]) => {
@@ -74,7 +95,7 @@ billingWebhook.post("/", bodyLimit({ maxSize: 131072 }), async (c) => {
         !invoice ||
         session.mode !== "payment" ||
         invoice.checkout_session_id !== session.id ||
-        providerAmount(invoice.amount, invoice.currency) !==
+        stripeAmount(invoice.amount, invoice.currency) !==
           session.amount_total ||
         invoice.currency.toLowerCase() !== session.currency
       )
@@ -88,6 +109,7 @@ billingWebhook.post("/", bodyLimit({ maxSize: 131072 }), async (c) => {
         return;
       }
       if (invoice.status !== "issued" || invoice.amount === 0) return;
+      await tx`INSERT INTO invoice_payments (invoice_id, amount, method, reference) VALUES (${id.data}, ${invoice.amount}, 'Stripe', ${session.id})`;
       await tx`UPDATE billing_invoices SET status = 'paid', version = version + 1, payment_source = 'stripe', payment_reference = ${session.id}, checkout_url = NULL WHERE id = ${id.data}`;
       await tx`UPDATE billing_provider_events SET outcome = 'applied' WHERE id = ${event.id}`;
       await recordAudit(tx, {
@@ -204,7 +226,7 @@ billing.post("/:id/reconcile", async (c) => {
     session.id !== before.checkout_session_id ||
     session.metadata?.invoiceId !== before.id ||
     session.mode !== "payment" ||
-    session.amount_total !== providerAmount(before.amount, before.currency) ||
+    session.amount_total !== stripeAmount(before.amount, before.currency) ||
     session.currency !== before.currency.toLowerCase()
   )
     throw new ApiFault(
@@ -244,6 +266,7 @@ billing.post("/:id/reconcile", async (c) => {
         "CONFLICT",
         "Invoice changed during verification. Refresh and investigate before retrying.",
       );
+    await tx`INSERT INTO invoice_payments (invoice_id, amount, method, reference) VALUES (${id.data}, ${invoice.amount}, 'Stripe', ${session.id})`;
     await tx`UPDATE billing_invoices SET status = 'paid', version = version + 1, payment_source = 'stripe', payment_reference = ${session.id}, checkout_url = NULL WHERE id = ${id.data}`;
     await recordBusinessAudit(
       tx,
@@ -309,7 +332,7 @@ billing.post(
       session.id !== before.checkout_session_id ||
       session.metadata?.invoiceId !== before.id ||
       session.mode !== "payment" ||
-      session.amount_total !== providerAmount(before.amount, before.currency) ||
+      session.amount_total !== stripeAmount(before.amount, before.currency) ||
       session.currency !== before.currency.toLowerCase() ||
       session.status !== "expired" ||
       session.payment_status !== "unpaid" ||
@@ -348,7 +371,7 @@ billing.post(
           "Provider review events still require investigation. Acknowledgement does not release checkout.",
         );
       await tx`INSERT INTO billing_checkout_recoveries (session_id, invoice_id, generation, recovered_by) VALUES (${session.id}, ${id.data}, ${invoice.checkout_generation}, ${c.get("userId")})`;
-      await tx`UPDATE billing_invoices SET checkout_session_id = NULL, checkout_url = NULL, checkout_expires_at = NULL, checkout_attempt_at = NULL, checkout_attempt_token = NULL, version = version + 1 WHERE id = ${id.data}`;
+      await tx`UPDATE billing_invoices SET checkout_session_id = NULL, checkout_url = NULL, checkout_expires_at = NULL, checkout_attempt_at = NULL, checkout_attempt_token = NULL, checkout_first_request = NULL, version = version + 1 WHERE id = ${id.data}`;
       await recordBusinessAudit(
         tx,
         c,
@@ -413,7 +436,7 @@ billing.post("/:id/link-session", bodyLimit({ maxSize: 4096 }), async (c) => {
     session.metadata?.attemptToken !== before.checkout_attempt_token ||
     session.metadata?.generation !== String(before.checkout_generation + 1) ||
     session.mode !== "payment" ||
-    session.amount_total !== providerAmount(before.amount, before.currency) ||
+    session.amount_total !== stripeAmount(before.amount, before.currency) ||
     session.currency !== before.currency.toLowerCase() ||
     !["open", "complete", "expired"].includes(session.status ?? "") ||
     !Number.isSafeInteger(session.expires_at) ||
@@ -482,10 +505,18 @@ billing.get("/", async (c) => {
     );
   const items = await c.get(
     "database",
-  )`SELECT id, number::text, customer_name AS "customerName", currency, amount, status, version, payment_source AS "paymentSource", payment_reference AS "paymentReference", items FROM billing_invoices WHERE ${owner} OR (customer_id = ${c.get("userId")} AND status <> 'draft') ORDER BY created_at DESC, id LIMIT 100`;
+  )`SELECT id, number::text, customer_name AS "customerName", currency, amount, status, (status = 'issued' AND EXISTS (SELECT 1 FROM invoice_payments p WHERE p.invoice_id=billing_invoices.id)) AS partial, version, payment_source AS "paymentSource", payment_reference AS "paymentReference", items, document - 'logo' AS snapshot,
+    coalesce((SELECT jsonb_agg(jsonb_build_object('amount',p.amount,'date',p.paid_on,'method',p.method) ORDER BY p.paid_on DESC,p.id DESC) FROM invoice_payments p WHERE p.invoice_id=billing_invoices.id),'[]'::jsonb) AS receipts FROM billing_invoices WHERE ${owner} OR (customer_id = ${c.get("userId")} AND status <> 'draft') ORDER BY created_at DESC, id LIMIT 100`;
   return c.json({
     checkout: !!c.env.STRIPE_SECRET_KEY && !!c.env.STRIPE_WEBHOOK_SECRET,
-    items,
+    items: items.map(({ snapshot, ...invoice }) => ({
+      ...invoice,
+      total: invoiceTotals({
+        currency: invoice.currency,
+        items: invoice.items,
+        document: invoiceDocument.parse(snapshot),
+      }).total,
+    })),
   });
 });
 billing.get("/list", async (c) => {
@@ -504,7 +535,7 @@ billing.get("/list", async (c) => {
   const pageSize = 20;
   // strpos treats user search literally, including SQL wildcard characters.
   const needle = search.toLowerCase();
-  const where = `($1::text = 'all' OR status = $1) AND ($2::text = '' OR strpos(lower(concat_ws(' ', number::text, customer_name, document->>'reference', document->>'billToName', document->>'billToEmail')), $2) > 0)`;
+  const where = `($1::text = 'all' OR status = $1 OR ($1 = 'outstanding' AND status='issued' AND amount > 0)) AND ($2::text = '' OR strpos(lower(concat_ws(' ', number::text, customer_name, document->>'reference', document->>'billToName', document->>'billToEmail')), $2) > 0)`;
   const {
     rows: [count],
   } = await db.query(
@@ -512,7 +543,10 @@ billing.get("/list", async (c) => {
     [status, needle],
   );
   const { rows } = await db.query(
-    `SELECT id, number::text, customer_name, currency, status, items, document FROM billing_invoices WHERE ${where} ORDER BY created_at DESC, id LIMIT $3 OFFSET $4`,
+    `SELECT id, number::text, customer_name, currency, status, amount, items, document,
+      (status='issued' AND nullif(document->>'dueDate','') < to_char(now() AT TIME ZONE coalesce((SELECT data->>'timezone' FROM business_settings WHERE singleton),'UTC'),'YYYY-MM-DD')) AS overdue,
+      (status='issued' AND EXISTS (SELECT 1 FROM invoice_payments p WHERE p.invoice_id=billing_invoices.id)) AS partial
+      FROM billing_invoices WHERE ${where} ORDER BY CASE WHEN $1='outstanding' THEN nullif(document->>'dueDate','') END ASC NULLS LAST, created_at DESC, id LIMIT $3 OFFSET $4`,
     [status, needle, pageSize, (page - 1) * pageSize],
   );
   return c.json({
@@ -535,8 +569,10 @@ billing.get("/list", async (c) => {
         currency: row.currency,
         status: row.status,
         total: totals.total,
+        overdue: !!row.overdue,
+        partial: row.partial,
         balance:
-          row.status === "paid" || row.status === "void" ? 0 : totals.balance,
+          row.status === "paid" || row.status === "void" ? 0 : row.amount,
       };
     }),
   });
@@ -567,12 +603,12 @@ billing.get("/:id", async (c) => {
   if (!id.success) throw new ApiFault(404, "NOT_FOUND", "Invoice not found.");
   const {
     rows: [invoice],
-  } = await c
-    .get("databasePool")
-    .query(
-      `SELECT id, number::text, document, customer_id AS "customerId", customer_name AS "customerName", currency, amount, status, version, payment_source AS "paymentSource", payment_reference AS "paymentReference", items FROM billing_invoices WHERE id = $1`,
-      [id.data],
-    );
+  } = await c.get("databasePool").query(
+    `SELECT (checkout_attempt_at IS NOT NULL OR checkout_session_id IS NOT NULL) AS "checkoutActive",
+      coalesce((SELECT jsonb_agg(jsonb_build_object('amount',p.amount,'date',p.paid_on,'method',p.method,'reference',p.reference,'actor',coalesce(u.name,p.recorded_by)) ORDER BY p.paid_on DESC,p.id DESC) FROM invoice_payments p LEFT JOIN "user" u ON u.id=p.recorded_by WHERE p.invoice_id=billing_invoices.id),'[]'::jsonb) AS payments,
+      id, number::text, document, customer_id AS "customerId", customer_name AS "customerName", currency, amount, status, (status = 'issued' AND EXISTS (SELECT 1 FROM invoice_payments p WHERE p.invoice_id=billing_invoices.id)) AS partial, version, payment_source AS "paymentSource", payment_reference AS "paymentReference", items FROM billing_invoices WHERE id = $1`,
+    [id.data],
+  );
   if (!invoice) throw new ApiFault(404, "NOT_FOUND", "Invoice not found.");
   return c.json({
     ...invoice,
@@ -704,6 +740,9 @@ billing.post("/:id/action", bodyLimit({ maxSize: 4096 }), async (c) => {
       action: z.enum(["issue", "void", "record-payment"]),
       version: z.number().int().positive(),
       reference: z.string().trim().max(120).optional(),
+      amount: z.number().int().positive().max(2000000000).optional(),
+      date: z.iso.date().optional(),
+      method: manualPaymentMethod.optional(),
     })
     .safeParse(await c.req.json().catch(() => null));
   if (!id.success || !input.success)
@@ -748,6 +787,28 @@ billing.post("/:id/action", bodyLimit({ maxSize: 4096 }), async (c) => {
         "INVALID_STATE",
         "That action is not allowed in the current state; external payment records also require a reference.",
       );
+    if (
+      action === "void" &&
+      (
+        await tx`SELECT id FROM invoice_payments WHERE invoice_id=${id.data} LIMIT 1`
+      ).length
+    )
+      throw new ApiFault(
+        409,
+        "INVALID_STATE",
+        "An invoice with recorded payments cannot be voided.",
+      );
+    const received = input.data.amount ?? invoice.amount;
+    const partial = action === "record-payment" && received < invoice.amount;
+    if (action === "record-payment") {
+      if (received > invoice.amount || received <= 0)
+        throw new ApiFault(
+          400,
+          "VALIDATION_ERROR",
+          "Enter an amount within the remaining balance.",
+        );
+      await tx`INSERT INTO invoice_payments (invoice_id,amount,paid_on,method,reference,recorded_by) VALUES (${id.data},${received},coalesce(${input.data.date ?? null}::date,current_date),${input.data.method ?? "Other"},${reference!},${c.get("userId")})`;
+    }
     const status =
       action === "issue"
         ? invoice.amount === 0
@@ -755,8 +816,10 @@ billing.post("/:id/action", bodyLimit({ maxSize: 4096 }), async (c) => {
           : "issued"
         : action === "void"
           ? "void"
-          : "paid";
-    await tx`UPDATE billing_invoices SET status = ${status}, version = version + 1, payment_source = ${action === "record-payment" ? "manual" : null}, payment_reference = ${action === "record-payment" ? reference! : null} WHERE id = ${id.data}`;
+          : partial
+            ? "issued"
+            : "paid";
+    await tx`UPDATE billing_invoices SET amount = ${partial ? invoice.amount - received : invoice.amount}, status = ${status}, version = version + 1, payment_source = ${action === "record-payment" && !partial ? "manual" : null}, payment_reference = ${action === "record-payment" && !partial ? reference! : null} WHERE id = ${id.data}`;
     await recordBusinessAudit(
       tx,
       c,
@@ -777,17 +840,24 @@ billing.post("/:id/checkout", async (c) => {
   if (!id.success) throw new ApiFault(404, "NOT_FOUND", "Invoice not found.");
   const provider = stripe(c.env);
   // Commit before the external call: a lost response must not erase the retry window.
-  await c.get("database").begin(async (tx) => {
+  const attemptToken = await c.get("database").begin(async (tx) => {
     const [invoice] =
-      await tx`SELECT checkout_attempt_at FROM billing_invoices WHERE id = ${id.data} AND status = 'issued' AND (customer_id = ${c.get("userId")} OR ${allowed(c, "billing:checkout")}) FOR UPDATE`;
+      await tx`SELECT checkout_attempt_at, checkout_attempt_token, checkout_session_id, checkout_first_request FROM billing_invoices WHERE id = ${id.data} AND status = 'issued' AND amount > 0 AND (customer_id = ${c.get("userId")} OR ${allowed(c, "billing:checkout")}) FOR UPDATE`;
     if (!invoice)
       throw new ApiFault(
         409,
         "INVALID_STATE",
         "An issued unpaid invoice is required to start checkout.",
       );
-    if (invoice.checkout_attempt_at) return;
-    await tx`UPDATE billing_invoices SET checkout_attempt_at = now(), checkout_attempt_token = ${crypto.randomUUID()} WHERE id = ${id.data}`;
+    if (invoice.checkout_attempt_at || invoice.checkout_session_id) {
+      // A retry may follow a lost provider response. A later validation error
+      // cannot establish what happened to that earlier request.
+      if (invoice.checkout_first_request && !invoice.checkout_session_id)
+        await tx`UPDATE billing_invoices SET checkout_first_request = false WHERE id = ${id.data}`;
+      return invoice.checkout_attempt_token;
+    }
+    const token = crypto.randomUUID();
+    await tx`UPDATE billing_invoices SET checkout_attempt_at = now(), checkout_attempt_token = ${token}, checkout_first_request = true WHERE id = ${id.data}`;
     await recordBusinessAudit(
       tx,
       c,
@@ -795,6 +865,7 @@ billing.post("/:id/checkout", async (c) => {
       "invoice",
       id.data,
     );
+    return token;
   });
   const result = await c.get("database").begin(async (tx) => {
     const [invoice] =
@@ -813,6 +884,22 @@ billing.post("/:id/checkout", async (c) => {
         409,
         "PAYMENT_REVIEW",
         "Payment confirmation needs review. Contact the business before trying another payment.",
+      );
+    if (
+      invoice.checkout_attempt_token !== attemptToken ||
+      !invoice.checkout_attempt_at
+    )
+      throw new ApiFault(
+        409,
+        "INVALID_STATE",
+        "Checkout changed. Refresh the invoice.",
+      );
+    const amount = stripeAmount(invoice.amount, invoice.currency);
+    if (amount !== invoice.amount && invoice.checkout_first_request === null)
+      throw new ApiFault(
+        409,
+        "PAYMENT_REVIEW",
+        "This earlier checkout needs an amount review. Contact the business.",
       );
     if (
       invoice.checkout_url &&
@@ -859,7 +946,7 @@ billing.post("/:id/checkout", async (c) => {
               quantity: 1,
               price_data: {
                 currency: invoice.currency.toLowerCase(),
-                unit_amount: providerAmount(invoice.amount, invoice.currency),
+                unit_amount: amount,
                 product_data: { name: `Invoice ${invoice.number}` },
               },
             },
@@ -868,20 +955,14 @@ billing.post("/:id/checkout", async (c) => {
         { idempotencyKey: `invoice-${invoice.id}-${generation}` },
       );
     } catch (error) {
-      // Only a definitive input rejection can release this attempt for retry.
-      if (
-        !(error instanceof Stripe.errors.StripeInvalidRequestError) ||
-        error.statusCode !== 400 ||
-        !error.requestId ||
-        ![
-          "parameter_invalid_integer",
-          "amount_too_small",
-          "amount_too_large",
-          "parameter_invalid_empty",
-        ].includes(error.code ?? "")
-      )
-        throw error;
-      await tx`UPDATE billing_invoices SET checkout_attempt_at = NULL, checkout_attempt_token = NULL, checkout_generation = ${generation} WHERE id = ${id.data}`;
+      if (!rejectedCheckoutInput(error)) throw error;
+      if (!invoice.checkout_first_request)
+        throw new ApiFault(
+          409,
+          "PAYMENT_REVIEW",
+          "An earlier checkout attempt needs review. Contact the business.",
+        );
+      await tx`UPDATE billing_invoices SET checkout_generation = ${generation}, checkout_attempt_at = NULL, checkout_attempt_token = NULL, checkout_first_request = NULL, version = version + 1 WHERE id = ${id.data}`;
       await recordBusinessAudit(
         tx,
         c,
@@ -889,7 +970,7 @@ billing.post("/:id/checkout", async (c) => {
         "invoice",
         id.data,
       );
-      return { rejected: true as const };
+      return null;
     }
     if (!session.url || new URL(session.url).hostname !== "checkout.stripe.com")
       throw new ApiFault(503, "UNAVAILABLE", "Checkout could not be created.");
@@ -903,11 +984,11 @@ billing.post("/:id/checkout", async (c) => {
     );
     return { url: session.url };
   });
-  if ("rejected" in result)
+  if (!result)
     throw new ApiFault(
       409,
       "CHECKOUT_REJECTED",
-      "The payment provider declined this invoice setup. Contact the business.",
+      "Online checkout was declined for this amount or currency. Contact the business for another payment option.",
     );
   return c.json(result);
 });

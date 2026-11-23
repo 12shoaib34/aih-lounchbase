@@ -1,10 +1,11 @@
+import {fixtureDatabase} from "../scripts/identity-endpoints.mjs";
 import { test, expect } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 import postgres from "postgres";
 
 test.beforeAll(async () => {
   const sql = postgres(
-    "postgres://postgres:postgres@127.0.0.1:54441/identity_fixture",
+    fixtureDatabase,
   );
   try {
     await sql`DELETE FROM "rateLimit"`;
@@ -17,7 +18,7 @@ test("customer records persist, recover conflicts, guard drafts, filter, paginat
   page,
 }, testInfo) => {
   const sql = postgres(
-    "postgres://postgres:postgres@127.0.0.1:54441/identity_fixture",
+    fixtureDatabase,
   );
   const email = `records-${randomUUID()}@example.com`;
   const password = "A long records browser password 123!";

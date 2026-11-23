@@ -81,7 +81,7 @@ test("built public metadata, route boundaries and cold homepage assets", async (
   );
   for (const path of [
     "/app/account",
-    "/app/account/bookings",
+    "/app/account/enquiries",
     "/app/admin/billing",
   ]) {
     await page.goto(path);
@@ -97,7 +97,7 @@ test("records automated accessibility findings on representative routes", async 
 }, info) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   const findings: { route: string; violations: unknown[] }[] = [];
-  for (const route of ["/", "/contact", "/work", "/app/account"]) {
+  for (const route of ["/", "/contact", "/work", "/app/account", "/website-template", "/app/track"]) {
     await page.goto(route);
     await page.waitForFunction(() => history.state?.__NA);
     await page.addScriptTag({ content: axe.source });

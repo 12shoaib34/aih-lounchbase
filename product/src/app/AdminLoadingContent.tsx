@@ -16,6 +16,17 @@ export function AdminLoadingContent({ title }: { title: string }) {
   switch (title) {
     case "Overview":
       return <OverviewSkeleton />;
+    case "Inquiries":
+      return (
+        <LoadingContent label="Loading inquiries…">
+          <div className="inquiry-inbox">
+            <SelectField label="Inquiry status" disabled>
+              <option>New</option>
+            </SelectField>
+            <p>Loading inquiries…</p>
+          </div>
+        </LoadingContent>
+      );
     case "Accounts":
       return <AccountsSkeleton />;
     case "Business settings":
@@ -41,16 +52,6 @@ export function AdminLoadingContent({ title }: { title: string }) {
             label="Loading files…"
             columns={["File", "Size", "Actions"]}
             pagination
-          />
-        </>
-      );
-    case "Scheduling":
-      return (
-        <>
-          <h2>Latest 100 bookings</h2>
-          <LoadingTable
-            label="Loading bookings…"
-            columns={["Resource", "Time", "Status", "Actions"]}
           />
         </>
       );

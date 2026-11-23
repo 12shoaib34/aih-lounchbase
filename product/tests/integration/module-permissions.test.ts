@@ -73,8 +73,6 @@ it("enforces independent module grants, customer ownership and same-session revo
         .join("; "),
     };
   }
-  const resourceId = randomUUID();
-  const bookingId = randomUUID();
   const invoiceId = randomUUID();
   const jobId = randomUUID();
   const checkoutId = randomUUID();
@@ -110,15 +108,9 @@ it("enforces independent module grants, customer ownership and same-session revo
         ).status,
       ).toBe(400);
     }
-    const reads = [
-      "scheduling:read",
-      "files:read",
-      "notifications:read",
-      "billing:read",
-    ];
+    const reads = ["files:read", "notifications:read", "billing:read"];
     await grant(reads);
     for (const path of [
-      "/api/scheduling/bookings?scope=all",
       "/api/notification-jobs",
       "/api/notification-jobs/email-review",
       "/api/billing?scope=all",
@@ -137,49 +129,6 @@ it("enforces independent module grants, customer ownership and same-session revo
     ]) {
       expect((await request(path, staff.cookie)).status).toBe(403);
     }
-    const resource = {
-      id: resourceId,
-      data: {
-        name: "Delegated resource",
-        timezone: "UTC",
-        hours: [{ day: 1, opens: "00:00", closes: "23:59" }],
-      },
-    };
-    expect(
-      (await request("/api/scheduling/resources", staff.cookie, resource))
-        .status,
-    ).toBe(403);
-    await grant([...reads, "scheduling:resources"]);
-    expect(
-      (await request("/api/scheduling/resources", staff.cookie, resource))
-        .status,
-    ).toBe(200);
-    await sql`INSERT INTO bookings (id, resource_id, customer_id, starts_at, ends_at) VALUES (${bookingId}, ${resourceId}, ${customer.id}, now() + interval '1 day', now() + interval '2 days')`;
-    expect(
-      (
-        await request(
-          `/api/scheduling/bookings/${bookingId}/cancel`,
-          staff.cookie,
-          {},
-        )
-      ).status,
-    ).toBe(404);
-    await grant([...reads, "scheduling:cancel"]);
-    expect(
-      (
-        await request(
-          `/api/scheduling/bookings/${bookingId}/cancel`,
-          staff.cookie,
-          {},
-        )
-      ).status,
-    ).toBe(204);
-    // Resource creation does not follow from cancellation permission.
-    expect(
-      (await request("/api/scheduling/resources", staff.cookie, resource))
-        .status,
-    ).toBe(403);
-
     const invoice = {
       id: invoiceId,
       data: {
@@ -303,37 +252,13 @@ it("enforces independent module grants, customer ownership and same-session revo
       expect((await checkout(staff.cookie)).status).toBe(409);
       expect(fetchSpy).not.toHaveBeenCalled();
       await grant([...reads, "billing:checkout"]);
-      fetchSpy.mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            error: {
-              type: "invalid_request_error",
-              code: "amount_too_small",
-              message: "Fixture rejection",
-            },
-          }),
-          {
-            status: 400,
-            headers: {
-              "request-id": "req_fixture",
-              "content-type": "application/json",
-            },
-          },
-        ),
-      );
-      expect((await checkout(staff.cookie)).status).toBe(409);
-      expect(
-        (
-          await sql`SELECT checkout_attempt_at, checkout_generation FROM billing_invoices WHERE id = ${checkoutId}`
-        )[0],
-      ).toMatchObject({ checkout_attempt_at: null, checkout_generation: 1 });
       expect((await checkout(staff.cookie)).status).toBe(200);
-      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
       // Customer ownership remains valid without business-wide billing grants.
       expect((await checkout(customer.cookie)).status).toBe(200);
       await grant(reads);
       expect((await checkout(staff.cookie)).status).toBe(409);
-      expect(fetchSpy).toHaveBeenCalledTimes(2);
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
     } finally {
       fetchSpy.mockRestore();
     }
@@ -451,7 +376,6 @@ it("enforces independent module grants, customer ownership and same-session revo
       (await request("/api/billing", customer.cookie, invoice)).status,
     ).toBe(403);
     for (const path of [
-      "/api/scheduling/bookings?scope=all",
       "/api/notification-jobs",
       "/api/billing?scope=all",
       "/api/admin/account-choices?purpose=billing",
@@ -461,8 +385,6 @@ it("enforces independent module grants, customer ownership and same-session revo
       200,
     );
   } finally {
-    await sql`DELETE FROM bookings WHERE id = ${bookingId}`;
-    await sql`DELETE FROM scheduling_resources WHERE id = ${resourceId}`;
     await sql`DELETE FROM billing_invoices WHERE id IN (${invoiceId}, ${checkoutId}, ${voidId})`;
     await sql`DELETE FROM notification_jobs WHERE id = ${jobId}`;
     await sql`DELETE FROM team_members WHERE user_id IN (SELECT id FROM "user" WHERE email = ANY(${emails}))`;

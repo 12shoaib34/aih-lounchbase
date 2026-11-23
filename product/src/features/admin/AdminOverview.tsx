@@ -13,10 +13,10 @@ const descriptions: Record<string, string> = {
   Accounts: "Find registered customers and team accounts.",
   "Business settings":
     "Manage business details, locations and regional settings.",
+  Inquiries: "Review incoming requests and create contacts.",
   Contacts: "Keep contact details, notes and imports organized.",
   Files: "Manage private files and review storage health.",
   Notifications: "Schedule messages and review delivery.",
-  Scheduling: "Manage resources and customer reservations.",
   Billing: "Create invoices and review payment records.",
   "Audit trail": "Review administrative changes and their references.",
 };

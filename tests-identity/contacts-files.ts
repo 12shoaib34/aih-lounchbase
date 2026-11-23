@@ -53,7 +53,10 @@ export async function checkContactsAndFiles(
     await page
       .getByRole("textbox", { name: "Private notes" })
       .fill("Updated fixture note");
+    const persisted = page.waitForResponse(response =>
+      new URL(response.url()).pathname === contactPath && response.request().method() === "PUT");
     await page.getByRole("button", { name: "Save contact" }).click();
+    expect((await persisted).status()).toBe(200);
     await expect(
       page.getByText("Updated fixture note", { exact: true }),
     ).toBeVisible();

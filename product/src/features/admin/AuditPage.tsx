@@ -20,9 +20,15 @@ import {
   auditPageSchema,
 } from "../../../shared/audit";
 
-function grants(permissions: (keyof typeof permissionLabels)[]) {
+const auditPermissionLabels = {
+  ...permissionLabels,
+  "scheduling:read": "View all bookings (retired)",
+  "scheduling:resources": "Create scheduling resources (retired)",
+  "scheduling:cancel": "Cancel any booking (retired)",
+};
+function grants(permissions: (keyof typeof auditPermissionLabels)[]) {
   return permissions.length
-    ? permissions.map((value) => permissionLabels[value] ?? value).join(", ")
+    ? permissions.map((value) => auditPermissionLabels[value]).join(", ")
     : "No delegated permissions";
 }
 export function AuditPage() {

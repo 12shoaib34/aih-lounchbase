@@ -1,3 +1,5 @@
+import { authConfiguration } from "../../../product/server/auth-configuration";
+import { queueTrackingLink } from "./tracking-mail";
 import { withDatabase } from "./database";
 const json = (data: unknown, status = 200): Response =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -102,19 +104,23 @@ export async function handleEnquiry(request: Request, env: Record<string,string 
     const id = input.submissionId ?? crypto.randomUUID();
     if (typeof id !== "string" || !/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(id))
       return json({error:"Invalid enquiry reference."}, 400);
-    const payload = JSON.stringify({...clean, equityAck: input.equityAck === "on"});
+    const payload = {...clean, equityAck: input.equityAck === "on"};
     const same = await withDatabase(sql => sql.begin(async tx => {
-      const inserted = await tx`INSERT INTO site_enquiries(id,payload) VALUES (${id},${payload}::jsonb)
+      const inserted = await tx`INSERT INTO site_enquiries(id,payload) VALUES (${id},${tx.json(payload)}::jsonb)
         ON CONFLICT DO NOTHING RETURNING id`;
       if (inserted.length) {
         await tx`INSERT INTO site_notifications(enquiry_id) VALUES (${id})`;
+        await queueTrackingLink(tx,id);
         return true;
       }
-      const [existing] = await tx`SELECT payload = ${payload}::jsonb AS matches FROM site_enquiries WHERE id=${id}`;
+      const [existing] = await tx`SELECT payload = ${tx.json(payload)}::jsonb AS matches FROM site_enquiries WHERE id=${id}`;
       return existing.matches;
     }), env.DATABASE_URL);
     if (!same) return json({error:"This reference already belongs to a different enquiry."},409);
-    return json({ok:true,reference:id,message:"Your enquiry has been received. Reference: " + id.slice(0,8)});
+    let trackingEnabled = false;
+    try { trackingEnabled = !!authConfiguration(env); } catch { /* Keep the accepted receipt available. */ }
+    const instructions = trackingEnabled ? " Check your email for your private sign-in link." : "";
+    return json({ok:true,reference:id,trackingEnabled,message:"Your enquiry has been received."+instructions+" Reference: " + id});
   } catch {
     return json({error:"Could not confirm receipt. Your details are preserved; please retry."},502);
   }

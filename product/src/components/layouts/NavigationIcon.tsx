@@ -8,10 +8,9 @@ const paths: Record<string, string> = {
   account: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0",
   security: "m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3Zm-3 9 2 2 4-4",
   "two-factor": "M7 10V7a5 5 0 0 1 10 0v3M5 10h14v11H5V10Zm7 4v3",
-  bookings: "M4 5h16v16H4V5Zm0 5h16M8 3v4m8-4v4m-9 8h3m4 0h3",
-  scheduling: "M4 5h16v16H4V5Zm0 5h16M8 3v4m8-4v4m-9 8h3m4 0h3",
   billing: "M6 3h12v18l-3-2-3 2-3-2-3 2V3Zm3 5h6m-6 4h6m-6 4h3",
   notifications: "M6 9a6 6 0 0 1 12 0v6l2 2H4l2-2V9Zm4 11h4",
+  inquiries: "M3 5h18v14H3V5Zm0 1 9 7 9-7",
   contacts:
     "M8 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-6 9a6 6 0 0 1 12 0m2-15h6m-6 5h6m-6 5h6",
   business: "M4 21V4h12v17M8 8h4m-4 4h4m-4 4h4m4-6h4v11M2 21h20",

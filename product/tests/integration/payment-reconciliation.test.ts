@@ -1,9 +1,21 @@
 import { randomUUID } from "node:crypto";
+import Stripe from "stripe";
 import postgres from "postgres";
 import { it, expect, vi } from "vitest";
 import app from "../../server/index";
 
-it("reconciles only matching paid recorded sessions with owner authorization and atomic audit", async () => {
+it.each([
+  ["USD", 1000],
+  ["JPY", 1000],
+  ["ISK", 100000],
+  ["UGX", 100000],
+] as const)(
+  "checks %s checkout, reconciliation, recovery and signed webhook amounts",
+  checkPayments,
+  30000,
+);
+
+async function checkPayments(currency: string, providerAmount: number) {
   if (!process.env.DATABASE_URL)
     throw new Error("Dedicated test database required.");
   const sql = postgres(process.env.DATABASE_URL);
@@ -73,6 +85,7 @@ it("reconciles only matching paid recorded sessions with owner authorization and
     };
   }
   const invoiceId = randomUUID();
+  const rejectionId = randomUUID();
   const sessionId = `cs_test_${randomUUID().replaceAll("-", "")}`;
   try {
     const owner = await register(emails[0]);
@@ -80,7 +93,57 @@ it("reconciles only matching paid recorded sessions with owner authorization and
     const customer = await register(emails[2]);
     await sql`INSERT INTO team_members (user_id, role) VALUES (${owner.id}, 'owner'), (${staff.id}, 'staff')`;
     await sql`INSERT INTO user_permissions (user_id, permission) VALUES (${staff.id}, 'billing:read'), (${staff.id}, 'billing:review')`;
-    await sql`INSERT INTO billing_invoices (id, customer_id, customer_name, currency, amount, items, status, checkout_session_id, checkout_attempt_at) VALUES (${invoiceId}, ${customer.id}, 'Fixture', 'USD', 1000, '[]', 'issued', ${sessionId}, now())`;
+    await sql`INSERT INTO billing_invoices (id, customer_id, customer_name, currency, amount, items, status) VALUES (${invoiceId}, ${customer.id}, 'Fixture', ${currency}, 1400, '[{"description":"Service","quantity":1,"unitAmount":1400}]', 'issued')`;
+    const receive = (amount: number, version: number, cookie = owner.cookie) =>
+      request(`/api/billing/${invoiceId}/action`, cookie, {
+        action: "record-payment",
+        reference: "deposit",
+        amount,
+        version,
+        method: "Cash",
+        date: "2026-01-01",
+      });
+    expect((await receive(400, 1, customer.cookie)).status).toBe(403);
+    expect((await receive(1401, 1)).status).toBe(400);
+    expect(
+      (await Promise.all([receive(400, 1), receive(400, 1)]))
+        .map((r) => r.status)
+        .sort(),
+    ).toEqual([200, 409]);
+    const details = await (
+      await request(`/api/billing/${invoiceId}`, owner.cookie)
+    ).json();
+    expect(details).toMatchObject({
+      amount: 1000,
+      partial: true,
+      payments: [{ amount: 400, method: "Cash", actor: "Audit tester" }],
+    });
+    const portal = await (
+      await request("/api/billing?scope=mine", customer.cookie)
+    ).json();
+    expect(portal.items[0]).toMatchObject({
+      partial: true,
+      amount: 1000,
+      total: 1400,
+      receipts: [{ date: "2026-01-01", amount: 400, method: "Cash" }],
+    });
+    expect(portal.items[0].receipts[0]).not.toHaveProperty("actor");
+    const outstanding = await (
+      await request("/api/billing/list?status=outstanding", owner.cookie)
+    ).json();
+    expect(
+      outstanding.items.find((row: { id: string }) => row.id === invoiceId),
+    ).toMatchObject({ partial: true, balance: 1000, total: 1400 });
+    expect(
+      (
+        await request(`/api/billing/${invoiceId}/action`, owner.cookie, {
+          action: "void",
+          version: 2,
+        })
+      ).status,
+    ).toBe(409);
+    await sql`UPDATE billing_invoices SET checkout_session_id=${sessionId},checkout_attempt_at=now() WHERE id=${invoiceId}`;
+    expect((await receive(100, 2)).status).toBe(409);
     const bindings = {
       ...env,
       STRIPE_SECRET_KEY: ["sk", "test", randomUUID()].join("_"),
@@ -98,11 +161,25 @@ it("reconciles only matching paid recorded sessions with owner authorization and
       id: sessionId,
       metadata: { invoiceId },
       mode: "payment",
-      amount_total: 1000,
-      currency: "usd",
+      amount_total: providerAmount,
+      currency: currency.toLowerCase(),
       status: "complete",
       payment_status: "paid",
     };
+    if (currency === "ISK" || currency === "UGX") {
+      await sql`UPDATE billing_invoices SET checkout_url = 'https://checkout.stripe.com/legacy', checkout_expires_at = now() + interval '1 hour' WHERE id = ${invoiceId}`;
+      expect(
+        (
+          await request(
+            `/api/billing/${invoiceId}/checkout`,
+            customer.cookie,
+            undefined,
+            "POST",
+            bindings,
+          )
+        ).status,
+      ).toBe(409);
+    }
     let response: object = evidence;
     let fail = false;
     let race = false;
@@ -130,7 +207,7 @@ it("reconciles only matching paid recorded sessions with owner authorization and
       { id: "wrong" },
       { metadata: {} },
       { mode: "subscription" },
-      { amount_total: 999 },
+      { amount_total: providerAmount === 1000 ? 999 : 1000 },
       { currency: "eur" },
       { status: "expired", payment_status: "unpaid" },
       { payment_status: "unpaid" },
@@ -182,6 +259,36 @@ it("reconciles only matching paid recorded sessions with owner authorization and
     const audits =
       await sql`SELECT actor_id FROM admin_audit_events WHERE action = 'invoice.payment_confirmed' AND target_id = ${invoiceId}`;
     expect(audits).toEqual([{ actor_id: owner.id }]);
+    const signing = new Stripe(bindings.STRIPE_SECRET_KEY);
+    async function webhook(amount: number) {
+      const eventId = `evt_${randomUUID()}`;
+      const payload = JSON.stringify({
+        id: eventId,
+        type: "checkout.session.completed",
+        data: { object: { ...evidence, amount_total: amount } },
+      });
+      const signature = signing.webhooks.generateTestHeaderString({
+        payload,
+        secret: bindings.STRIPE_WEBHOOK_SECRET,
+      });
+      const res = await app.request(
+        base + "/api/billing-webhook",
+        {
+          method: "POST",
+          headers: { "stripe-signature": signature },
+          body: payload,
+        },
+        bindings,
+      );
+      expect(res.status).toBe(200);
+      const [event] =
+        await sql`SELECT outcome FROM billing_provider_events WHERE id = ${eventId}`;
+      return event.outcome;
+    }
+    await sql`UPDATE billing_invoices SET status='issued', payment_source=NULL, payment_reference=NULL WHERE id=${invoiceId}`;
+    expect(await webhook(providerAmount === 1000 ? 999 : 1000)).toBe("review");
+    expect(await webhook(providerAmount)).toBe("applied");
+    await sql`DELETE FROM billing_provider_events WHERE invoice_id=${invoiceId}`;
     // A separate issued fixture state exercises conservative expired recovery.
     await sql`UPDATE billing_invoices SET status = 'issued', payment_source = NULL, payment_reference = NULL, checkout_generation = 1 WHERE id = ${invoiceId}`;
     let version = (
@@ -286,6 +393,9 @@ it("reconciles only matching paid recorded sessions with owner authorization and
       const form = new URLSearchParams(
         input instanceof Request ? await input.text() : String(init?.body),
       );
+      expect(form.get("line_items[0][price_data][unit_amount]")).toBe(
+        String(providerAmount),
+      );
       submittedToken = form.get("metadata[attemptToken]") ?? "";
       expect(submittedToken).toMatch(/^[a-f0-9-]{36}$/);
       expect(form.get("metadata[generation]")).toBe("2");
@@ -346,7 +456,9 @@ it("reconciles only matching paid recorded sessions with owner authorization and
     for (const mismatch of [
       { metadata: { invoiceId } },
       { metadata: { ...linkedEvidence.metadata, generation: "1" } },
-      { metadata: { ...linkedEvidence.metadata, attemptToken: randomUUID() } },
+      {
+        metadata: { ...linkedEvidence.metadata, attemptToken: randomUUID() },
+      },
       { amount_total: 1 },
       { currency: "eur" },
       { mode: "setup" },
@@ -402,8 +514,96 @@ it("reconciles only matching paid recorded sessions with owner authorization and
       checkout_generation: 2,
       checkout_session_id: "cs_replacement",
     });
+    await sql`INSERT INTO billing_invoices (id, customer_id, customer_name, currency, amount, items, status) VALUES (${rejectionId}, ${customer.id}, 'Checkout fixture', ${currency}, 1000, '[]', 'issued')`;
+    const checkout = () =>
+      request(
+        `/api/billing/${rejectionId}/checkout`,
+        customer.cookie,
+        undefined,
+        "POST",
+        bindings,
+      );
+    const rejection = (code: string, param?: string) =>
+      new Response(
+        JSON.stringify({
+          error: {
+            type: "invalid_request_error",
+            code,
+            param,
+            message: "provider validation",
+          },
+        }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    for (const [index, code] of [
+      "amount_too_small",
+      "currency_not_supported",
+      "parameter_invalid_enum",
+    ].entries()) {
+      fetcher.mockResolvedValueOnce(
+        rejection(
+          code,
+          code === "parameter_invalid_enum"
+            ? "line_items[0][price_data][currency]"
+            : undefined,
+        ),
+      );
+      expect(await (await checkout()).json()).toMatchObject({
+        error: { code: "CHECKOUT_REJECTED" },
+      });
+      const [row] =
+        await sql`SELECT amount, status, checkout_attempt_at, checkout_attempt_token, checkout_generation FROM billing_invoices WHERE id = ${rejectionId}`;
+      expect(row).toMatchObject({
+        amount: 1000,
+        status: "issued",
+        checkout_attempt_at: null,
+        checkout_attempt_token: null,
+        checkout_generation: index + 1,
+      });
+    }
+    expect(
+      await sql`SELECT id FROM admin_audit_events WHERE target_id = ${rejectionId} AND action='invoice.checkout_rejected'`,
+    ).toHaveLength(3);
+    const voidInvoice = (version: number) =>
+      request(`/api/billing/${rejectionId}/action`, owner.cookie, {
+        action: "void",
+        version,
+      });
+    const [released] =
+      await sql`SELECT version FROM billing_invoices WHERE id = ${rejectionId}`;
+    expect((await voidInvoice(released.version)).status).toBe(200);
+    // Reset the isolated fixture for a separate ambiguous dispatch.
+    await sql`UPDATE billing_invoices SET status='issued' WHERE id=${rejectionId}`;
+    fetcher.mockRejectedValueOnce(new Error("Timed out waiting for response"));
+    expect((await checkout()).status).toBe(500);
+    fetcher.mockResolvedValueOnce(rejection("amount_too_small"));
+    expect(await (await checkout()).json()).toMatchObject({
+      error: { code: "PAYMENT_REVIEW" },
+    });
+    const [pending] =
+      await sql`SELECT checkout_attempt_token, version FROM billing_invoices WHERE id = ${rejectionId}`;
+    expect(pending.checkout_attempt_token).toBeTruthy();
+    expect(await (await voidInvoice(pending.version)).json()).toMatchObject({
+      error: { code: "CHECKOUT_EXISTS" },
+    });
+    const success = {
+      id: "cs_concurrent",
+      url: "https://checkout.stripe.com/concurrent",
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+    };
+    fetcher.mockImplementation(
+      async () =>
+        new Response(JSON.stringify(success), {
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+    const previousCalls = fetcher.mock.calls.length;
+    const results = await Promise.all([checkout(), checkout()]);
+    expect(results.map((result) => result.status)).toEqual([200, 200]);
+    expect(fetcher.mock.calls.length - previousCalls).toBe(1);
   } finally {
     vi.restoreAllMocks();
+    await sql`DELETE FROM billing_invoices WHERE id = ${rejectionId}`;
     await sql`DELETE FROM billing_provider_events WHERE invoice_id = ${invoiceId}`;
     await sql`DELETE FROM billing_invoices WHERE id = ${invoiceId}`;
     for (const email of emails) {
@@ -413,4 +613,4 @@ it("reconciles only matching paid recorded sessions with owner authorization and
     }
     await sql.end();
   }
-}, 30000);
+}

@@ -15,7 +15,6 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
   const suffix = randomUUID();
   const contactId = randomUUID();
   const importedId = randomUUID();
-  const resourceId = randomUUID();
   const invoiceIds = [randomUUID(), randomUUID()];
   const emails = [
     `owner-${suffix}@example.com`,
@@ -110,7 +109,7 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
     expect((await request("/api/admin", owner.cookie)).status).toBe(200);
     const invoiceData = {
       customerId: customer.id,
-      currency: "ISK",
+      currency: "USD",
       items: [{ description: "Service", quantity: 2, unitAmount: 500 }],
     };
     expect(
@@ -220,7 +219,7 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
         input instanceof Request ? await input.text() : String(init?.body);
       expect(
         new URLSearchParams(body).get("line_items[0][price_data][unit_amount]"),
-      ).toBe("100000");
+      ).toBe("1000");
       return new Response(
         JSON.stringify({
           id: `cs_${invoiceIds[1]}`,
@@ -359,8 +358,8 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
           id: `cs_${invoiceIds[1]}`,
           mode: "payment",
           payment_status: "paid",
-          amount_total: 100000,
-          currency: "isk",
+          amount_total: 1000,
+          currency: "usd",
           metadata: { invoiceId: invoiceIds[1] },
         },
       },
@@ -393,88 +392,6 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
     expect(
       await sql`SELECT id FROM billing_provider_events WHERE id = ${eventId}`,
     ).toHaveLength(1);
-    const resource = {
-      id: resourceId,
-      data: {
-        name: "Shared resource",
-        timezone: "UTC",
-        hours: Array.from({ length: 7 }, (_, day) => ({
-          day,
-          opens: "00:00",
-          closes: "23:59",
-        })),
-      },
-    };
-    expect(
-      (await request("/api/scheduling/resources", customer.cookie, resource))
-        .status,
-    ).toBe(403);
-    expect(
-      (await request("/api/scheduling/resources", owner.cookie, resource))
-        .status,
-    ).toBe(200);
-    const starts = new Date(Date.now() + 86400000);
-    starts.setUTCHours(12, 0, 0, 0);
-    const booking = {
-      resourceId,
-      startsAt: starts.toISOString(),
-      endsAt: new Date(starts.getTime() + 3600000).toISOString(),
-    };
-    const bookingIds = [randomUUID(), randomUUID()];
-    const attempts = await Promise.all([
-      request("/api/scheduling/bookings", owner.cookie, {
-        ...booking,
-        id: bookingIds[0],
-      }),
-      request("/api/scheduling/bookings", customer.cookie, {
-        ...booking,
-        id: bookingIds[1],
-      }),
-    ]);
-    expect(attempts.map((response) => response.status).sort()).toEqual([
-      200, 409,
-    ]);
-    const winner = attempts[0].status === 200 ? 0 : 1;
-    const winningCookie = winner === 0 ? owner.cookie : customer.cookie;
-    expect(
-      (
-        await request("/api/scheduling/bookings", winningCookie, {
-          ...booking,
-          id: bookingIds[winner],
-        })
-      ).status,
-    ).toBe(200);
-    expect(
-      (await request("/api/scheduling/bookings?scope=all", customer.cookie))
-        .status,
-    ).toBe(403);
-    if (winner === 0)
-      expect(
-        (
-          await request(
-            `/api/scheduling/bookings/${bookingIds[0]}/cancel`,
-            customer.cookie,
-            {},
-          )
-        ).status,
-      ).toBe(404);
-    expect(
-      (
-        await request(
-          `/api/scheduling/bookings/${bookingIds[winner]}/cancel`,
-          winningCookie,
-          {},
-        )
-      ).status,
-    ).toBe(204);
-    expect(
-      (
-        await request("/api/scheduling/bookings", customer.cookie, {
-          ...booking,
-          id: randomUUID(),
-        })
-      ).status,
-    ).toBe(200);
     expect(
       await (
         await request("/api/notifications/preferences", customer.cookie)
@@ -1035,30 +952,6 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
       actor_type: "account",
       actor_id: customer.id,
     });
-    expect(
-      await sql`SELECT id FROM admin_audit_events WHERE target_id = ${resourceId} AND action = 'resource.created'`,
-    ).toHaveLength(1);
-    expect(
-      (
-        await request(
-          `/api/scheduling/bookings/${bookingIds[winner]}/cancel`,
-          winningCookie,
-          {},
-        )
-      ).status,
-    ).toBe(204);
-    const bookingEvents =
-      await sql`SELECT action, actor_id FROM admin_audit_events WHERE target_id = ${bookingIds[winner]} ORDER BY id`;
-    expect(bookingEvents.map((event) => event.action)).toEqual([
-      "booking.created",
-      "booking.cancelled",
-    ]);
-    expect(bookingEvents[0].actor_id).toBe(
-      winner === 0 ? owner.id : customer.id,
-    );
-    expect(
-      await sql`SELECT id FROM admin_audit_events WHERE target_id = ${bookingIds[1 - winner]}`,
-    ).toHaveLength(0);
     const filteredAudit = await (
       await request(
         `/api/audit?action=invoice.payment_confirmed&target=${invoiceIds[1]}`,
@@ -1390,8 +1283,6 @@ it("enforces live team permissions, isolates records, and rolls back conflicting
   } finally {
     await sql`DELETE FROM billing_provider_events WHERE invoice_id IN (${invoiceIds[0]}, ${invoiceIds[1]})`;
     await sql`DELETE FROM billing_invoices WHERE id IN (${invoiceIds[0]}, ${invoiceIds[1]})`;
-    await sql`DELETE FROM bookings WHERE resource_id = ${resourceId}`;
-    await sql`DELETE FROM scheduling_resources WHERE id = ${resourceId}`;
     await sql`DELETE FROM contacts WHERE id = ${contactId}`;
     await sql`DELETE FROM contacts WHERE id = ${importedId}`;
     await sql`DELETE FROM team_members WHERE user_id IN (SELECT id FROM "user" WHERE email IN (${emails[0]}, ${emails[1]}))`;

@@ -1,5 +1,5 @@
 import { FormFeedback } from "@/components/ui/FormFeedback";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { z } from "zod";
 import { Field } from "@/components/ui/Field";
 import { SelectField } from "@/components/ui/SelectField";
@@ -20,6 +20,7 @@ export function ContactImport({
   canImport: boolean;
   canExport: boolean;
 }) {
+  const fileSelection = useRef(0);
   const [source, setSource] = useState("");
   const [mapping, setMapping] = useState<Record<string, string>>({});
   const [items, setItems] = useState<{ id: string; data: ContactInput }[]>([]);
@@ -31,10 +32,11 @@ export function ContactImport({
     <details className="component-card">
       <summary>Import and export contacts</summary>
       <p>
-        CSV files up to 1 MiB and 500 rows. Use | between tags in external CSV files. Keep the version column when re-importing a Launchbase export. Imports add
-        records; they do not merge existing contacts by email. Re-selecting a
-        file starts a new import. Exports include all statuses, up to 1000
-        records, and protect spreadsheet formula cells.
+        CSV files up to 1 MiB and 500 rows. Use | between tags in your own CSV.
+        Downloaded CSVs preserve exact tag values. Imports add records; they do
+        not merge existing contacts by email. Re-selecting a file starts a new
+        import. Exports include all statuses, up to 1000 records, and protect
+        spreadsheet formula cells.
       </p>
       {canExport && <a href="/api/contacts/export">Download contacts CSV</a>}
       {canImport && (
@@ -44,24 +46,24 @@ export function ContactImport({
           accept=".csv,text/csv"
           disabled={pending}
           onChange={async (event) => {
+            const selection = ++fileSelection.current;
+            setSource("");
             setItems([]);
             setMessage("");
             setErrors([]);
             setMapping({});
             const file = event.target.files?.[0];
-            if (!file) {
-              setSource("");
-              return;
-            }
+            if (!file) return;
             if (file.size > 1048576) {
-              setSource("");
               setErrors(["Choose a CSV file up to 1 MiB."]);
               return;
             }
             try {
-              setSource(await file.text());
+              const text = await file.text();
+              if (fileSelection.current === selection) setSource(text);
             } catch {
-              setErrors(["The file could not be read."]);
+              if (fileSelection.current === selection)
+                setErrors(["The file could not be read."]);
             }
           }}
         />
@@ -79,11 +81,18 @@ export function ContactImport({
                 }
                 onChange={(event) => {
                   setMapping({ ...mapping, [key]: event.target.value });
+                  setErrors([]);
                   setItems([]);
                   setMessage("");
                 }}
               >
-                <option value="">Skip column / use default</option>
+                <option value="">
+                  {key === "name"
+                    ? "Select a name column"
+                    : key === "status"
+                      ? "Use active status"
+                      : "Skip this field"}
+                </option>
                 {parsed.headers.map((header) => (
                   <option key={header}>{header}</option>
                 ))}
@@ -131,6 +140,7 @@ export function ContactImport({
             columns={[
               { key: "name", label: "Name", render: (row) => row.data.name },
               { key: "email", label: "Email", render: (row) => row.data.email },
+              { key: "notes", label: "Notes", render: (row) => row.data.notes },
               {
                 key: "company",
                 label: "Company",

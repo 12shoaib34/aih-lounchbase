@@ -25,7 +25,61 @@ it("previews retention and ownership transfer, applies bounded cleanup and revok
     sql = postgres(url.toString(), { max: 1 });
     for (const id of ["old", "next"])
       await sql`INSERT INTO "user" (id, name, email, "emailVerified", "createdAt", "updatedAt") VALUES (${id}, ${id}, ${`${id}@example.com`}, true, now(), now())`;
-    expect((await run("bootstrap-owner", "old@example.com")).stdout).toContain("appointed");
+    const loseAcknowledgement = (script: string, ...args: string[]) =>
+      exec(
+        process.execPath,
+        [
+          "--experimental-test-module-mocks",
+          "--import",
+          "./product/tests/integration/fixtures/lost-owner-commit.mjs",
+          `scripts/${script}.mjs`,
+          ...args,
+        ],
+        { env: { ...process.env, DATABASE_URL: url.toString() } },
+      );
+    const failedReference = async (command: ReturnType<typeof run>) => {
+      const failure = await command.then(
+        () => null,
+        (error: { code: number; stdout: string; stderr: string }) => error,
+      );
+      expect(failure?.code).toBe(1);
+      expect(failure?.stdout).toBe("");
+      expect(failure?.stderr).toContain("could not be confirmed");
+      expect(failure?.stderr).not.toMatch(
+        /rollback|no transaction changes were committed/i,
+      );
+      const reference = failure?.stderr.match(
+        /audit reference ([0-9a-f-]{36})/i,
+      )?.[1];
+      expect(reference).toBeDefined();
+      return reference!;
+    };
+    await sql`CREATE FUNCTION reject_owner_commit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Injected commit rejection'; END $$`;
+    const rejectCommit = () =>
+      sql!`CREATE CONSTRAINT TRIGGER reject_owner_commit AFTER INSERT ON admin_audit_events DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION reject_owner_commit()`;
+    const allowCommit = () =>
+      sql!`DROP TRIGGER reject_owner_commit ON admin_audit_events`;
+    await rejectCommit();
+    const rejectedBootstrap = await failedReference(
+      run("bootstrap-owner", "old@example.com"),
+    );
+    expect(
+      await sql`SELECT user_id FROM team_members WHERE role='owner'`,
+    ).toHaveLength(0);
+    expect(
+      await sql`SELECT id FROM admin_audit_events WHERE request_id=${rejectedBootstrap}`,
+    ).toHaveLength(0);
+    await allowCommit();
+    const bootstrapRef = await failedReference(
+      loseAcknowledgement("bootstrap-owner", "old@example.com"),
+    );
+    expect(
+      await sql`SELECT action,target_id FROM admin_audit_events WHERE request_id=${bootstrapRef}`,
+    ).toEqual([{ action: "owner.bootstrapped", target_id: "old" }]);
+    expect((await run("bootstrap-owner", "old@example.com")).stdout).toContain(
+      "already the owner",
+    );
+
     await sql`INSERT INTO session (id, token, "userId", "expiresAt", "updatedAt") VALUES ('expired', 'expired-test-session', 'old', now() - interval '10 days', now()), ('fresh', 'fresh-test-session', 'next', now() + interval '1 day', now())`;
     await sql`INSERT INTO auth_mail_outbox (recipient, subject, url, created_at) VALUES ('old@example.com', 'old', 'http://localhost/private', now() - interval '10 days')`;
     const failedJob = randomUUID();
@@ -51,12 +105,27 @@ it("previews retention and ownership transfer, applies bounded cleanup and revok
     expect(
       await sql`SELECT id FROM mail_jobs WHERE id = ${failedJob}`,
     ).toHaveLength(1);
-    await run("transfer-owner", "old@example.com", "next@example.com");
+    expect(
+      (await run("transfer-owner", "old@example.com", "next@example.com"))
+        .stdout,
+    ).toContain("Preview passed");
+    await expect(
+      run("transfer-owner", "old@example.com", " OLD@example.com ", "--apply"),
+    ).rejects.toThrow();
+    await rejectCommit();
+    const rejectedTransfer = await failedReference(
+      run("transfer-owner", "old@example.com", "next@example.com", "--apply"),
+    );
+    expect(
+      await sql`SELECT id FROM admin_audit_events WHERE request_id=${rejectedTransfer}`,
+    ).toHaveLength(0);
+    expect(await sql`SELECT id FROM session`).toEqual([{ id: "fresh" }]);
+    await allowCommit();
     expect(
       (await sql`SELECT user_id FROM team_members WHERE role = 'owner'`)[0]
         .user_id,
     ).toBe("old");
-    await run(
+    const transferred = await run(
       "transfer-owner",
       "old@example.com",
       "next@example.com",
@@ -71,18 +140,36 @@ it("previews retention and ownership transfer, applies bounded cleanup and revok
     ).toHaveLength(0);
     expect(await sql`SELECT id FROM session`).toHaveLength(0);
     const events =
-      await sql`SELECT action, request_id FROM admin_audit_events ORDER BY id`;
+      await sql`SELECT action, request_id FROM admin_audit_events WHERE action IN ('owner.transferred_out','owner.transferred_in') ORDER BY id`;
     expect(events.map((row) => row.action)).toEqual([
-      "owner.bootstrapped",
       "owner.transferred_out",
       "owner.transferred_in",
     ]);
-    expect(events[1].request_id).toBe(events[2].request_id);
+    expect(events[0].request_id).toBe(events[1].request_id);
+    expect(transferred.stdout).toContain("Ownership transferred");
+    expect(transferred.stdout).toContain(events[0].request_id);
     await expect(
       run("transfer-owner", "old@example.com", "next@example.com", "--apply"),
     ).rejects.toThrow();
     await run("retention", "--apply");
     expect(await sql`SELECT id FROM admin_audit_events`).toHaveLength(3);
+    const transferRef = await failedReference(
+      loseAcknowledgement(
+        "transfer-owner",
+        "next@example.com",
+        "old@example.com",
+        "--apply",
+      ),
+    );
+    expect(
+      await sql`SELECT user_id FROM team_members WHERE role='owner'`,
+    ).toEqual([{ user_id: "old" }]);
+    expect(
+      await sql`SELECT action,target_id FROM admin_audit_events WHERE request_id=${transferRef} ORDER BY id`,
+    ).toEqual([
+      { action: "owner.transferred_out", target_id: "next" },
+      { action: "owner.transferred_in", target_id: "old" },
+    ]);
   } finally {
     await sql?.end();
     if (created) await admin.unsafe(`DROP DATABASE "${name}"`);

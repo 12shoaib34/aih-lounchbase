@@ -3,35 +3,66 @@ import { Field } from "@/components/ui/Field";
 import { TextAreaField } from "@/components/ui/TextAreaField";
 import { SelectField } from "@/components/ui/SelectField";
 import { Button } from "@/components/ui/Button";
-import { businessLogo, type Business } from "../../../shared/business";
+import {
+  businessSections,
+  sectionFor,
+  type BusinessSection,
+} from "./businessSettingsData";
+import {
+  businessInvoiceDefaults,
+  newInvoiceDocument,
+} from "../../../shared/invoiceDefaults";
+import {
+  businessInput,
+  businessLogo,
+  type Business,
+} from "../../../shared/business";
 
 export function BusinessSectionNav({
   section = "profile",
   onChange,
+  edited,
+  invalid,
 }: {
+  edited?: Set<BusinessSection>;
+  invalid?: Set<BusinessSection>;
   section?: string;
-  onChange?: (section: string) => void;
+  onChange?: (section: BusinessSection) => void;
 }) {
   return (
     <nav
       className="business-section-nav"
       aria-label="Business settings sections"
     >
-      {[
-        ["profile", "Business profile"],
-        ["regional", "Regional preferences"],
-        ["invoices", "Invoice preferences"],
-        ["locations", "Locations & hours"],
-      ].map(([key, label]) => (
+      {(Object.keys(businessSections) as BusinessSection[]).map((key) => (
         <Button
           key={key}
           type="button"
           variant="secondary"
+          aria-label={businessSections[key]}
+          aria-describedby={
+            edited?.has(key) || invalid?.has(key)
+              ? "section-state-" + key
+              : undefined
+          }
           aria-pressed={section === key}
           aria-controls={`business-panel-${key}`}
           onClick={() => onChange?.(key)}
         >
-          {label}
+          {businessSections[key]}
+          {(edited?.has(key) || invalid?.has(key)) && (
+            <small
+              id={"section-state-" + key}
+              className="business-section-mark"
+            >
+              {[
+                edited?.has(key) && "Edited",
+                invalid?.has(key) && "Needs attention",
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </small>
+          )}
         </Button>
       ))}
     </nav>
@@ -298,6 +329,7 @@ export function BusinessInvoicePreferences({
   errors,
   disabled,
 }: Props) {
+  const [preview, setPreview] = useState(false);
   const preferences = draft.invoiceDefaults;
   const change = <K extends keyof typeof preferences>(
     key: K,
@@ -384,6 +416,64 @@ export function BusinessInvoicePreferences({
           ))}
         </fieldset>
       </section>
+      <section className="business-section">
+        <Button
+          variant="secondary"
+          aria-expanded={preview}
+          aria-controls="business-invoice-preview"
+          onClick={() => setPreview(!preview)}
+        >
+          Preview invoice defaults
+        </Button>
+        <div id="business-invoice-preview" hidden={!preview}>
+          {preview && <InvoiceDefaultsPreview draft={draft} />}
+        </div>
+      </section>
     </>
+  );
+}
+
+function InvoiceDefaultsPreview({ draft }: { draft: Business }) {
+  const parsed = businessInput.safeParse(draft);
+  if (!parsed.success)
+    return (
+      <p role="status">
+        Check these settings before previewing a new invoice:{" "}
+        {Array.from(
+          new Set(
+            parsed.error.issues.map(
+              (issue) => businessSections[sectionFor(issue.path.join("."))],
+            ),
+          ),
+        ).join(", ")}
+        .
+      </p>
+    );
+  const defaults = businessInvoiceDefaults(parsed.data);
+  const invoice = newInvoiceDocument(defaults);
+  return (
+    <section className="business-preview" aria-label="Invoice defaults preview">
+      {invoice.logo && <img src={invoice.logo} alt="Invoice logo" />}
+      <h3>{invoice.sellerName}</h3>
+      {invoice.sellerAddress && <p>{invoice.sellerAddress}</p>}
+      {invoice.sellerEmail && <p>{invoice.sellerEmail}</p>}
+      <dl>
+        {[
+          ["Currency", defaults.currency],
+          ["Example issue date", invoice.invoiceDate],
+          ["Example due date", invoice.dueDate || "No default"],
+          ["Payment period", invoice.paymentTerms],
+          ["Notes", invoice.notes],
+          ["Terms and payment instructions", invoice.terms],
+        ]
+          .filter(([, v]) => v)
+          .map(([k, v]) => (
+            <div key={k}>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))}
+      </dl>
+    </section>
   );
 }

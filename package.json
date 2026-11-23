@@ -16,7 +16,8 @@
     "owner:bootstrap": "node scripts/bootstrap-owner.mjs",
     "owner:transfer": "node scripts/transfer-owner.mjs",
     "data:retention": "node scripts/retention.mjs",
-    "lint": "oxlint --deny correctness src product scripts tests tests-identity worker.ts"
+    "lint": "oxlint --deny correctness src product scripts tests tests-identity worker.ts",
+    "preview:mail": "node scripts/open-fixture-mail.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.107.1",

@@ -29,7 +29,7 @@ export default function mount(scope) {
     if (arrangement) fields.set('service', arrangement);
     fields.delete('supportArrangement');
     original = Object.fromEntries(fields);
-    if (window.BriefContext) original.message = window.BriefContext.message();
+    if (!form.dataset.contactEmail && window.BriefContext) original.message = window.BriefContext.message();
     lockedFields = [...form.elements].filter(field => field.name && !field.disabled && !verification.contains(field));
     for (const field of lockedFields) field.disabled = true;
     form.dataset.submissionLocked = 'true';
@@ -47,8 +47,9 @@ export default function mount(scope) {
     token = '';
     send.disabled = true;
     const email = document.createElement('a');
-    email.href = 'mailto:inquiry@appsinhours.com';
-    email.textContent = 'inquiry@appsinhours.com';
+    const address = form.dataset.contactEmail || 'inquiry@appsinhours.com';
+    email.href = 'mailto:' + address;
+    email.textContent = address;
     form.querySelector('label').before(status);
     status.replaceChildren('Online enquiries are unavailable. Email ', email, ' to contact the studio.');
   }
@@ -126,6 +127,12 @@ export default function mount(scope) {
       if (response.ok && result.ok) {
         received = true;
         status.textContent = result.message || 'Thank you. Your enquiry has been received.';
+        if (result.trackingEnabled && result.reference) {
+          const tracking = document.createElement('a');
+          tracking.href = '/app/account/enquiries?reference=' + encodeURIComponent(result.reference);
+          tracking.textContent = 'Track this enquiry';
+          status.append(' ',tracking);
+        }
         send.textContent = 'Enquiry submitted';
         verification.hidden = true;
       } else if (response.status === 503) {

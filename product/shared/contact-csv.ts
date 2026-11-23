@@ -1,9 +1,6 @@
 import type { z } from "zod";
 import Papa from "papaparse";
 import { contactInput, type ContactInput } from "./contacts";
-const formatColumn = "launchbase_csv_version";
-const formulaOrQuote = /^['=+@\-\t\r]/;
-
 export const contactColumns = [
   "name",
   "email",
@@ -15,6 +12,10 @@ export const contactColumns = [
   "tags",
   "status",
 ] as const;
+const versionColumn = "launchbase_csv_version";
+// Include a literal apostrophe so decoding a protected cell is reversible.
+const protectedPrefix = /^['=+@\-\t\r\n]/;
+
 export function readContactCsv(
   source: string,
   mapping: Record<string, string> = {},
@@ -24,7 +25,11 @@ export function readContactCsv(
     delimiter: ",",
     skipEmptyLines: "greedy",
   });
-  const headers = parsed.meta.fields ?? [];
+  const fields = parsed.meta.fields ?? [];
+  const versioned = fields.includes(versionColumn);
+  const headers = fields.filter(
+    (field) => field !== versionColumn && field !== "",
+  );
   const errors: string[] = [];
   if (
     parsed.errors.length ||
@@ -42,23 +47,28 @@ export function readContactCsv(
   const seen = new Set<string>();
   if (errors.length) return { headers, rows, errors };
   parsed.data.forEach((row, index) => {
-    const exported = row[formatColumn] === "1";
+    if (versioned && row[versionColumn] !== "1") {
+      errors.push(`Row ${index + 2}: unsupported contact CSV version.`);
+      return;
+    }
     const value = (key: string) => {
       const column = mapping[key] ?? key;
-      const text = column ? (row[column] ?? "") : "";
-      return exported &&
-        text.startsWith("'") &&
-        formulaOrQuote.test(text.slice(1))
-        ? text.slice(1)
-        : text;
+      if (!column || column === versionColumn || !Object.hasOwn(row, column))
+        return "";
+      const raw = row[column] ?? "";
+      return versioned &&
+        raw.startsWith("'") &&
+        protectedPrefix.test(raw.slice(1))
+        ? raw.slice(1)
+        : raw;
     };
     const tagCell = value("tags");
     let tags: unknown;
-    if (exported && tagCell) {
+    if (versioned && (mapping.tags ?? "tags") === "tags" && tagCell) {
       try {
         tags = JSON.parse(tagCell);
       } catch {
-        errors.push(`Row ${index + 2}: invalid exported tags.`);
+        errors.push(`Row ${index + 2}: invalid tags array.`);
         return;
       }
     } else {
@@ -93,18 +103,17 @@ export function readContactCsv(
 export function writeContactCsv(rows: z.input<typeof contactInput>[]) {
   return Papa.unparse(
     {
-      fields: [...contactColumns, formatColumn],
+      fields: [...contactColumns, versionColumn],
       data: rows.map((input) => {
         const row = contactInput.parse(input);
         return [
-          ...contactColumns.map((key) => {
-            const text = key === "tags" ? JSON.stringify(row.tags) : row[key];
-            return formulaOrQuote.test(text) ? "'" + text : text;
-          }),
+          ...contactColumns.map((key) =>
+            key === "tags" ? JSON.stringify(row.tags) : row[key],
+          ),
           "1",
         ];
       }),
     },
-    { escapeFormulae: true },
+    { escapeFormulae: protectedPrefix },
   );
 }

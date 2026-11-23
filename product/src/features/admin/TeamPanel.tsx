@@ -13,6 +13,11 @@ import { teamSchema, staffPermission } from "../../../shared/team";
 const resultSchema = z.object({ success: z.literal(true) });
 const permissionGroups = [
   {
+    prefix: "inquiries:",
+    title: "Inquiries",
+    hint: "Review incoming requests and mark them handled. Creating a contact also requires contact write access.",
+  },
+  {
     prefix: "users:",
     title: "Account directory",
     hint: "Names, email addresses, verification status and team roles.",
@@ -26,11 +31,6 @@ const permissionGroups = [
     prefix: "contacts:",
     title: "Contacts",
     hint: "Viewing includes private notes and archived contacts. Each additional action requires View contacts.",
-  },
-  {
-    prefix: "scheduling:",
-    title: "Scheduling",
-    hint: "All customer bookings. Resource creation and cancellation each require View all bookings.",
   },
   {
     prefix: "files:",

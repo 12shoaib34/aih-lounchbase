@@ -1,0 +1,72 @@
+body:has(.enquiry-template) {
+  background: #11151e;
+}
+.enquiry-template {
+  box-sizing: border-box;
+  max-width: 42rem;
+  margin: 0 auto;
+  min-height: 100svh;
+  padding: clamp(1.25rem, 5vw, 3rem);
+  background: #11151e;
+  color: #f4f6fa;
+  font:
+    1rem/1.55 system-ui,
+    sans-serif;
+  color-scheme: dark;
+  overflow-wrap: anywhere;
+}
+.enquiry-template h1 {
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1.12;
+}
+.enquiry-template header,
+.enquiry-template footer {
+  padding-block: 1rem;
+  border-bottom: 1px solid #475168;
+}
+.enquiry-template footer {
+  margin-top: 2rem;
+  border-top: 1px solid #475168;
+  border-bottom: 0;
+}
+.enquiry-template label {
+  display: grid;
+  gap: 0.3rem;
+  margin: 1rem 0;
+}
+.enquiry-template input,
+.enquiry-template textarea,
+.enquiry-template select,
+.enquiry-template button {
+  box-sizing: border-box;
+  font: inherit;
+  border-radius: 0.4rem;
+  padding: 0.65rem 0.8rem;
+}
+.enquiry-template input,
+.enquiry-template textarea,
+.enquiry-template select {
+  width: 100%;
+  background: #171e29;
+  color: inherit;
+  border: 1px solid #79869c;
+}
+.enquiry-template button {
+  cursor: pointer;
+  background: #adc2ff;
+  color: #111a30;
+  border: 0;
+  margin: 0.5rem 0.5rem 0.5rem 0;
+}
+.enquiry-template button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.enquiry-template a {
+  color: #b6cbff;
+  text-decoration: underline;
+}
+.enquiry-template :focus-visible {
+  outline: 3px solid #b4d1ff;
+  outline-offset: 3px;
+}

@@ -1,3 +1,5 @@
+import {checkEnquiryJourney} from "./enquiry-journey";
+import {fixtureDatabase} from "../scripts/identity-endpoints.mjs";
 import { checkProductPages } from "./product-pages";
 import { checkContactsAndFiles } from "./contacts-files";
 import { checkAdminModules } from "./admin-modules";
@@ -125,6 +127,7 @@ export async function checkInvitation(
     await checkAdminModules(owner, guest, email, sql);
     await checkContactsAndFiles(owner, guest, email, sql);
     await checkProductPages(owner, guest, email, sql);
+    await checkEnquiryJourney(browser,owner,guest,sql,origin,email);
     const [user] = await sql`SELECT id FROM "user" WHERE email=${email}`;
     const recoveryArgs = [
       "scripts/recover-mfa.mjs",
@@ -139,7 +142,7 @@ export async function checkInvitation(
           env: {
             ...process.env,
             DATABASE_URL:
-              "postgres://postgres:postgres@127.0.0.1:54441/identity_fixture",
+              fixtureDatabase,
           },
         }),
       );

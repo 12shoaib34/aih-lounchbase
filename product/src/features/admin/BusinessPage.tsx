@@ -1,7 +1,15 @@
 "use client";
 import { useFeedbackNotice } from "@/components/ui/useFeedbackNotice";
 import { FormFeedback } from "@/components/ui/FormFeedback";
-import { emptyBusiness } from "./businessSettingsData";
+import { BusinessLocations } from "./BusinessLocations";
+import {
+  businessSections,
+  changedSections,
+  sectionFor,
+  validationErrors,
+  type BusinessSection,
+  emptyBusiness,
+} from "./businessSettingsData";
 import { useConfirmation } from "@/components/ui/useConfirmation";
 import {
   BusinessProfileFields,
@@ -9,7 +17,7 @@ import {
   BusinessSectionNav,
 } from "./BusinessSettingsFields";
 import { BusinessSkeleton } from "./AdminSkeletons";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { OwnerPage } from "@/components/layouts/OwnerPage";
 import { Field } from "@/components/ui/Field";
@@ -49,15 +57,6 @@ function Settings({ userId }: { userId: string }) {
   );
 }
 const defaults = emptyBusiness;
-const days = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 function Editor({
   initial,
 }: {
@@ -66,9 +65,10 @@ function Editor({
   const confirmation = useConfirmation();
   const cache = useQueryClient();
   const form = useRef<HTMLFormElement>(null);
-  const [section, setSection] = useState("profile");
+  const [section, setSection] = useState<BusinessSection>("profile");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [logoLoading, setLogoLoading] = useState(false);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [validate, setValidate] = useState(false);
   const [base, setBase] = useState(initial);
   const [draft, setDraft] = useState(initial.data ?? defaults);
   const [pending, setPending] = useState(false);
@@ -76,9 +76,25 @@ function Editor({
   useFeedbackNotice(message);
   const [error, setError] = useState("");
   const [conflict, setConflict] = useState(false);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(base.data ?? defaults);
+  const fieldErrors = useMemo(
+    () => (validate ? validationErrors(draft) : {}),
+    [draft, validate],
+  );
+  const invalidSections = new Set(Object.keys(fieldErrors).map(sectionFor));
+  const editedSections = changedSections(base.data ?? defaults, draft);
+  const dirty = editedSections.size > 0;
+  function finishSave(saved: typeof initial) {
+    setEditingId(null);
+    setBase(saved);
+    setDraft(saved.data ?? defaults);
+    setValidate(false);
+    setConflict(false);
+    setError("");
+    setMessage("Business settings saved.");
+    void cache.invalidateQueries({ queryKey: ["owner", "business"] });
+    void cache.invalidateQueries({ queryKey: ["billing"] });
+  }
   function update<K extends keyof Business>(key: K, value: Business[K]) {
-    setFieldErrors({});
     setDraft((current) => ({ ...current, [key]: value }));
     setMessage("");
   }
@@ -93,9 +109,10 @@ function Editor({
     setPending(true);
     try {
       const latest = await apiRequest("/business", {}, businessSchema);
+      setEditingId(null);
       setBase(latest);
       setDraft(latest.data ?? defaults);
-      setFieldErrors({});
+      setValidate(false);
       setConflict(false);
       setError("");
     } catch {
@@ -107,7 +124,12 @@ function Editor({
   return (
     <>
       <UnsavedChanges dirty={dirty} pending={pending || logoLoading} />
-      <BusinessSectionNav section={section} onChange={setSection} />
+      <BusinessSectionNav
+        section={section}
+        onChange={setSection}
+        edited={editedSections}
+        invalid={invalidSections}
+      />
       <form
         className="business-settings-form"
         ref={form}
@@ -117,25 +139,17 @@ function Editor({
           if (pending || logoLoading || conflict) return;
           const parsed = businessInput.safeParse(draft);
           if (!parsed.success) {
-            const errors: Record<string, string> = {};
-            for (const issue of parsed.error.issues) {
-              let path = issue.path.join(".");
-              // Cross-field hours errors belong to an editable time control.
-              if (path.endsWith(".hours")) path += ".0.opens";
-              if (/\.hours\.\d+$/.test(path)) path += ".closes";
-              errors[path] ??= issue.message;
+            const invalidSection = sectionFor(
+              parsed.error.issues[0].path.join("."),
+            );
+            if (invalidSection === "locations") {
+              const index = parsed.error.issues[0].path[1];
+              if (typeof index === "number")
+                setEditingId(draft.locations[index].id);
             }
-            const first = Object.keys(errors)[0] ?? "name";
-            const invalidSection = first.startsWith("locations")
-              ? "locations"
-              : first.startsWith("invoiceDefaults")
-                ? "invoices"
-                : ["timezone", "currency", "locale"].includes(first)
-                  ? "regional"
-                  : "profile";
             setSection(invalidSection);
-            setFieldErrors(errors);
-            setError("Check the highlighted fields before saving.");
+            setValidate(true);
+            setError("");
             requestAnimationFrame(() =>
               form.current
                 ?.querySelector<HTMLElement>(
@@ -145,7 +159,7 @@ function Editor({
             );
             return;
           }
-          setFieldErrors({});
+          setValidate(false);
           setPending(true);
           setError("");
           setMessage("");
@@ -161,23 +175,61 @@ function Editor({
               },
               businessSchema,
             );
-            setBase(saved);
-            setDraft(saved.data!);
-            setMessage("Business settings saved.");
-            void cache.invalidateQueries({ queryKey: ["owner", "business"] });
-            void cache.invalidateQueries({ queryKey: ["billing"] });
+            finishSave(saved);
           } catch (failure) {
             if (
-              failure instanceof ApiError &&
-              [401, 403].includes(failure.status)
-            )
-              void cache.invalidateQueries({ queryKey: ["owner", "access"] });
-            setConflict(failure instanceof ApiError && failure.status === 409);
-            setError(
-              failure instanceof ApiError
-                ? failure.message
-                : "Could not save settings. Your draft is still here.",
-            );
+              !(failure instanceof ApiError) ||
+              failure.status === 409 ||
+              failure.status >= 500
+            ) {
+              try {
+                const latest = await apiRequest(
+                  "/business",
+                  {},
+                  businessSchema,
+                );
+                if (
+                  latest.data &&
+                  !changedSections(parsed.data, latest.data).size
+                ) {
+                  finishSave(latest);
+                  return;
+                }
+                if (latest.version !== base.version) {
+                  const changed = [
+                    ...changedSections(
+                      base.data ?? defaults,
+                      latest.data ?? defaults,
+                    ),
+                  ].map((key) => businessSections[key]);
+                  setConflict(true);
+                  setError(
+                    "Settings changed elsewhere. " +
+                      (changed.length
+                        ? "Changed sections: " + changed.join(", ") + ". "
+                        : "") +
+                      "Your draft is still here.",
+                  );
+                  return;
+                }
+              } catch (readFailure) {
+                if (
+                  readFailure instanceof ApiError &&
+                  [401, 403].includes(readFailure.status)
+                ) {
+                  void cache.invalidateQueries({
+                    queryKey: ["owner", "access"],
+                  });
+                }
+              }
+              setError(
+                "Could not confirm the save. Your draft is still here. Try saving again.",
+              );
+            } else {
+              if ([401, 403].includes(failure.status))
+                void cache.invalidateQueries({ queryKey: ["owner", "access"] });
+              setError(failure.message);
+            }
           } finally {
             setPending(false);
           }
@@ -247,173 +299,24 @@ function Editor({
           </fieldset>
           <p className="hint">
             Used as business preferences; changing them does not convert
-            existing amounts or reschedule existing bookings.
+            existing amounts.
           </p>
         </section>
         <section
           className="business-section"
-          aria-labelledby="business-locations"
+          aria-label="Locations and opening hours"
           id="business-panel-locations"
           hidden={section !== "locations"}
         >
-          <h2 id="business-locations">Locations and opening hours</h2>
-          <p className="hint">
-            No periods means closed. Times use the business timezone. Split
-            overnight hours into separate days.
-          </p>
-          {!draft.locations.length && (
-            <p className="hint">
-              No locations added yet. Add a location if your business needs
-              opening hours.
-            </p>
-          )}
-          {draft.locations.map((location, index) => {
-            const change = (value: Partial<typeof location>) =>
-              update(
-                "locations",
-                draft.locations.map((item) =>
-                  item.id === location.id ? { ...item, ...value } : item,
-                ),
-              );
-            return (
-              <fieldset
-                className="business-location"
-                key={location.id}
-                disabled={pending}
-              >
-                <legend>Location {index + 1}</legend>
-                <Field
-                  label="Location name"
-                  required
-                  maxLength={100}
-                  error={fieldErrors[`locations.${index}.name`]}
-                  value={location.name}
-                  onChange={(e) => change({ name: e.target.value })}
-                />
-                <Field
-                  label="Address"
-                  maxLength={160}
-                  error={fieldErrors[`locations.${index}.address`]}
-                  value={location.address}
-                  onChange={(e) => change({ address: e.target.value })}
-                />
-                {location.hours.map((period, i) => (
-                  <div className="settings-hours" key={i}>
-                    <SelectField
-                      label="Day"
-                      error={fieldErrors[`locations.${index}.hours.${i}.day`]}
-                      value={period.day}
-                      onChange={(e) =>
-                        change({
-                          hours: location.hours.map((h, n) =>
-                            n === i ? { ...h, day: Number(e.target.value) } : h,
-                          ),
-                        })
-                      }
-                    >
-                      {days.map((day, n) => (
-                        <option key={day} value={n}>
-                          {day}
-                        </option>
-                      ))}
-                    </SelectField>
-                    <Field
-                      label="Opens"
-                      type="time"
-                      required
-                      error={fieldErrors[`locations.${index}.hours.${i}.opens`]}
-                      value={period.opens}
-                      onChange={(e) =>
-                        change({
-                          hours: location.hours.map((h, n) =>
-                            n === i ? { ...h, opens: e.target.value } : h,
-                          ),
-                        })
-                      }
-                    />
-                    <Field
-                      label="Closes"
-                      type="time"
-                      required
-                      error={
-                        fieldErrors[`locations.${index}.hours.${i}.closes`]
-                      }
-                      value={period.closes}
-                      onChange={(e) =>
-                        change({
-                          hours: location.hours.map((h, n) =>
-                            n === i ? { ...h, closes: e.target.value } : h,
-                          ),
-                        })
-                      }
-                    />
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      onClick={() =>
-                        change({
-                          hours: location.hours.filter((_, n) => n !== i),
-                        })
-                      }
-                    >
-                      Remove period {i + 1}
-                    </Button>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={location.hours.length >= 21}
-                  onClick={() =>
-                    change({
-                      hours: [
-                        ...location.hours,
-                        { day: 1, opens: "09:00", closes: "17:00" },
-                      ],
-                    })
-                  }
-                >
-                  Add opening period
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={async () => {
-                    if (
-                      await confirmation.confirm(
-                        `Remove ${location.name || "this location"} and its opening hours?`,
-                        {
-                          title: "Remove location?",
-                          confirmLabel: "Remove location",
-                        },
-                      )
-                    )
-                      update(
-                        "locations",
-                        draft.locations.filter(
-                          (item) => item.id !== location.id,
-                        ),
-                      );
-                  }}
-                >
-                  Remove location
-                </Button>
-              </fieldset>
-            );
-          })}
-          <Button
-            type="button"
-            variant="secondary"
-            disabled={pending || draft.locations.length >= 30}
-            onClick={() =>
-              update("locations", [
-                ...draft.locations,
-                { id: crypto.randomUUID(), name: "", address: "", hours: [] },
-              ])
-            }
-          >
-            Add location
-          </Button>
+          <BusinessLocations
+            editingId={editingId}
+            onEdit={setEditingId}
+            locations={draft.locations}
+            timezone={draft.timezone}
+            disabled={pending}
+            errors={fieldErrors}
+            onChange={(locations) => update("locations", locations)}
+          />
         </section>
         <div className="business-save">
           <div>
@@ -426,7 +329,16 @@ function Editor({
                     ? "All changes saved"
                     : "No unsaved changes"}
             </p>
-            <FormFeedback message={error} error focus={false} />
+            <FormFeedback
+              message={
+                error ||
+                (invalidSections.size
+                  ? "Check the highlighted fields before saving."
+                  : "")
+              }
+              error
+              focus={false}
+            />
           </div>
           <div className="business-save-actions">
             {conflict && (

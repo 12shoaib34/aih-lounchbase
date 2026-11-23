@@ -24,7 +24,7 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
   - [x] Team, accounts, business settings and audit.
   - [x] Contacts and private files.
   - [x] Notifications and jobs.
-  - [x] Scheduling and bookings.
+  - [x] Scheduling and bookings migrated in step 6, subsequently retired by upstream fac3756.
   - [x] Billing, invoices and webhooks.
   - [x] Verify permissions, retries and inherited issue disposition per slice.
 - [x] **7. Rehearse the combined release** · [Clean checkout results](docs/verification/combined-release.md)
@@ -34,3 +34,7 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
 - [ ] **8. Approved cutover**
   - [ ] Confirm operational dependencies, owner approval, backup and rollback target.
   - [ ] Switch traffic, smoke-test and reconcile background jobs and data.
+
+- [x] Reusable website template: guest contact → admin review → emailed customer sign-in → private status. Verify isolation, retry and browser flows.
+
+- [x] Sync Launchbase through eee8e99. Verify intake, account status isolation, staff handling, location hours and installment balances in the combined Worker.

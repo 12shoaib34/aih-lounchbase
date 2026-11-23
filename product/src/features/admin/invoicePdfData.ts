@@ -9,6 +9,7 @@ export type PrintableInvoice = {
   number: string;
   currency: string;
   status: string;
+  amount?: number;
   items: { description: string; quantity: number; unitAmount: number }[];
   document: InvoiceDocument;
 };
@@ -28,7 +29,12 @@ export function invoicePdfData(invoice: PrintableInvoice) {
       year: "numeric",
       timeZone: "UTC",
     }).format(new Date(`${value}T00:00:00Z`));
-  const paid = invoice.status === "paid" ? totals.total : totals.amountPaid;
+  const paid =
+    invoice.status === "paid"
+      ? totals.total
+      : invoice.status === "issued" && invoice.amount !== undefined
+        ? totals.total - invoice.amount
+        : totals.amountPaid;
   const balance = invoice.status === "void" ? 0 : totals.total - paid;
   const hasAdjustments = !!(totals.discount || totals.tax || totals.shipping);
   const summary = [

@@ -149,6 +149,12 @@ export function invoiceTotals(value: {
   };
 }
 
+export const manualPaymentMethod = z.enum([
+  "Bank transfer",
+  "Cash",
+  "Cheque",
+  "Other",
+]);
 export const invoiceSchema = z.object({
   id: z.uuid(),
   number: z.string(),
@@ -157,11 +163,34 @@ export const invoiceSchema = z.object({
   amount: z.number().int(),
   status: z.enum(["draft", "issued", "paid", "void"]),
   version: z.number().int(),
+  total: z.number().int().optional(),
+  receipts: z
+    .array(
+      z.object({
+        date: z.string(),
+        amount: z.number().int(),
+        method: z.string(),
+      }),
+    )
+    .optional(),
+  partial: z.boolean().optional(),
   paymentSource: z.string().nullable(),
   paymentReference: z.string().nullable(),
   items: invoiceInput.shape.items,
 });
 export const invoiceDetailsSchema = invoiceSchema.extend({
+  checkoutActive: z.boolean().optional(),
+  payments: z
+    .array(
+      z.object({
+        amount: z.number().int(),
+        date: z.string(),
+        method: z.string(),
+        reference: z.string(),
+        actor: z.string().nullable(),
+      }),
+    )
+    .optional(),
   customerId: z.string().nullable(),
   document: invoiceDocument.prefault({}),
   checkout: z.boolean().default(false),
@@ -183,7 +212,11 @@ export function formatMoney(amount: number, currency: string, locale?: string) {
   const digits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
   return formatter.format(amount / 10 ** digits);
 }
-export function parsePrice(value: string, currency: string) {
+export function parsePrice(
+  value: string,
+  currency: string,
+  maximum = 100000000,
+) {
   const digits =
     new Intl.NumberFormat("en", {
       style: "currency",
@@ -197,7 +230,7 @@ export function parsePrice(value: string, currency: string) {
   const [whole, fraction = ""] = value.split(".");
   const amount =
     Number(whole) * 10 ** digits + Number(fraction.padEnd(digits, "0"));
-  if (!Number.isSafeInteger(amount) || amount < 1 || amount > 100000000)
+  if (!Number.isSafeInteger(amount) || amount < 1 || amount > maximum)
     throw new Error("Price is outside the supported range.");
   return amount;
 }
@@ -237,7 +270,9 @@ export const paymentReviewSchema = z.object({
 
 export const invoiceListQuery = z.object({
   search: z.string().trim().max(100).default(""),
-  status: z.enum(["all", "draft", "issued", "paid", "void"]).default("all"),
+  status: z
+    .enum(["all", "outstanding", "draft", "issued", "paid", "void"])
+    .default("all"),
   page: z.coerce.number().int().min(1).max(10000).default(1),
 });
 export const invoiceListSchema = z.object({
@@ -253,6 +288,8 @@ export const invoiceListSchema = z.object({
       dueDate: z.string(),
       status: invoiceSchema.shape.status,
       currency: z.string(),
+      partial: z.boolean().optional(),
+      overdue: z.boolean().optional(),
       total: z.number().int(),
       balance: z.number().int(),
     }),

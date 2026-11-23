@@ -22,6 +22,8 @@ import {
   formatMoney,
 } from "../../../shared/billing";
 import type { Permission } from "../../../shared/access";
+import { RecordPaymentDialog } from "./RecordPaymentDialog";
+import type { InvoiceDetails } from "../../../shared/billing";
 import { InvoiceEditor } from "./InvoiceEditor";
 
 export function InvoicePage({
@@ -183,6 +185,9 @@ function InvoiceRecord({
   const cache = useQueryClient();
   const location = useLocation();
   const [pending, setPending] = useState(false);
+  const [paymentInvoice, setPaymentInvoice] = useState<InvoiceDetails | null>(
+    null,
+  );
   const [printing, setPrinting] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState("");
@@ -222,21 +227,9 @@ function InvoiceRecord({
     )
       void cache.invalidateQueries({ queryKey: ["owner", "access"] });
   }, [query.error, cache]);
-  async function action(kind: "issue" | "void" | "record-payment") {
+  async function action(kind: "issue" | "void") {
     if (!query.data || pending) return;
-    let reference: string | undefined;
-    if (kind === "record-payment") {
-      reference =
-        (await confirmation.prompt(
-          "Mark the entire remaining balance as paid using a payment already received elsewhere. Enter its reference. This does not charge the customer or record a partial payment.",
-          {
-            title: "Record received payment",
-            confirmLabel: "Record payment",
-            inputLabel: "Payment reference",
-          },
-        )) ?? undefined;
-      if (!reference) return;
-    } else if (
+    if (
       !(await confirmation.confirm(
         kind === "issue"
           ? `Issue invoice ${query.data.document.reference || query.data.number}? It will be locked for editing and available to any linked customer account. This does not email the invoice or charge the customer.`
@@ -257,7 +250,6 @@ function InvoiceRecord({
         body: JSON.stringify({
           action: kind,
           version: query.data.version,
-          reference,
         }),
       });
       await query.refetch();
@@ -329,7 +321,12 @@ function InvoiceRecord({
     );
   const details = invoice.document;
   const totals = invoiceTotals(invoice);
-  const paid = invoice.status === "paid" ? totals.total : totals.amountPaid;
+  const paid =
+    invoice.status === "paid"
+      ? totals.total
+      : invoice.status === "issued"
+        ? totals.total - invoice.amount
+        : totals.amountPaid;
   return (
     <div className="invoice-review">
       <PageHeader
@@ -338,7 +335,7 @@ function InvoiceRecord({
           <>
             {reference} ·{" "}
             <span className={`billing-status billing-status-${invoice.status}`}>
-              {invoice.status}
+              {invoice.partial ? "Partially paid" : invoice.status}
             </span>
           </>
         }
@@ -393,11 +390,11 @@ function InvoiceRecord({
             {invoice.status === "issued" &&
               permissions.includes("billing:record-payment") && (
                 <Button
-                  disabled={pending}
+                  disabled={pending || invoice.checkoutActive}
                   variant="secondary"
-                  onClick={() => void action("record-payment")}
+                  onClick={() => setPaymentInvoice(invoice)}
                 >
-                  Record full payment {details.reference || invoice.number}
+                  Record payment
                 </Button>
               )}
             {invoice.status === "issued" &&
@@ -510,6 +507,7 @@ function InvoiceRecord({
                   {printing ? "Preparing print…" : "Print"}
                 </Button>
                 {["draft", "issued"].includes(invoice.status) &&
+                  !invoice.partial &&
                   permissions.includes("billing:void") && (
                     <Button
                       disabled={pending}
@@ -528,6 +526,26 @@ function InvoiceRecord({
           </div>
         }
       />
+      {paymentInvoice && (
+        <RecordPaymentDialog
+          invoice={paymentInvoice}
+          onClose={() => setPaymentInvoice(null)}
+          onRecorded={() => {
+            setPaymentInvoice(null);
+            setError("");
+            setMessage("Payment recorded.");
+            void query.refetch();
+            void cache.invalidateQueries({ queryKey: ["billing"] });
+          }}
+        />
+      )}
+      {invoice.status === "issued" &&
+        invoice.checkoutActive &&
+        permissions.includes("billing:record-payment") && (
+          <p>
+            Resolve the open online checkout before recording a manual payment.
+          </p>
+        )}
       {pending && !message && <p role="status">Processing invoice action…</p>}
       {error && (
         <p
@@ -559,7 +577,9 @@ function InvoiceRecord({
           <div className="generator-saved-title">
             <h2>{details.title}</h2>
             <p># {details.reference || invoice.number}</p>
-            <p className="invoice-status">{invoice.status}</p>
+            <p className="invoice-status">
+              {invoice.partial ? "Partially paid" : invoice.status}
+            </p>
           </div>
         </header>
         <div className="invoice-parties">
@@ -675,7 +695,22 @@ function InvoiceRecord({
             <p className="invoice-multiline">{details.terms}</p>
           </section>
         )}
-        {invoice.paymentSource && (
+        {!!invoice.payments?.length && (
+          <section>
+            <h3>Payment history</h3>
+            <ul>
+              {invoice.payments.map((payment, index) => (
+                <li key={index}>
+                  {payment.date} ·{" "}
+                  {formatMoney(payment.amount, invoice.currency)} ·{" "}
+                  {payment.method} · {payment.reference}
+                  {payment.actor && ` · Recorded by ${payment.actor}`}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+        {!invoice.payments?.length && invoice.paymentSource && (
           <p>
             Payment recorded through{" "}
             {invoice.paymentSource === "manual"

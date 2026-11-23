@@ -28,6 +28,32 @@ export async function checkAdminModules(
     ).toBeVisible();
     await admin.reload();
     await expect(field).toHaveValue(name);
+    const locations = admin.getByRole("button", {
+      name: "Locations & hours",
+      exact: true,
+    });
+    await locations.click();
+    await admin
+      .getByRole("button", { name: "Add location", exact: true })
+      .click();
+    await admin
+      .getByLabel("Location name", { exact: true })
+      .fill("Fixture office");
+    await admin
+      .getByLabel("Address", { exact: true })
+      .fill("24 Example Street");
+    const monday = admin.getByRole("group", { name: "Monday", exact: true });
+    await monday.getByRole("button", { name: "Set hours" }).click();
+    await admin.getByRole("button", { name: "Copy Monday to Tue–Fri" }).click();
+    await admin.getByRole("button", { name: "Save business settings" }).click();
+    await expect(
+      admin.getByRole("status").filter({ hasText: "All changes saved" }),
+    ).toBeVisible();
+    await admin.reload();
+    await locations.click();
+    await expect(
+      admin.getByText("Monday–Friday", { exact: true }),
+    ).toBeVisible();
     const saved = await (await admin.request.get("/api/business")).json();
     expect(
       (

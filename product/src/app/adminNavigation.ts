@@ -8,6 +8,13 @@ const destinations: {
   permission?: Permission;
   ownerOnly?: boolean;
 }[] = [
+  { to: "/admin/enquiries", label: "Enquiry tracking", group: "Business", ownerOnly: true },
+  {
+    to: "/admin/inquiries",
+    label: "Inquiries",
+    group: "Business",
+    permission: "inquiries:manage",
+  },
   {
     to: "/admin/contacts",
     label: "Contacts",
@@ -19,12 +26,6 @@ const destinations: {
     label: "Billing",
     group: "Business",
     permission: "billing:read",
-  },
-  {
-    to: "/admin/scheduling",
-    label: "Scheduling",
-    group: "Business",
-    permission: "scheduling:read",
   },
   {
     to: "/admin/files",

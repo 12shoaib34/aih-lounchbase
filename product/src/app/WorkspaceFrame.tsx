@@ -16,12 +16,9 @@ export function WorkspaceFrame(props: ComponentProps<typeof WorkspaceShell>) {
     if (pathname.startsWith("/admin"))
       rememberWorkspaceContext(userId, "admin");
     else if (
-      [
-        "/workspace",
-        "/account/billing",
-        "/account/bookings",
-        "/account/notifications",
-      ].includes(pathname)
+      ["/workspace", "/account/enquiries", "/account/billing", "/account/notifications"].includes(
+        pathname,
+      )
     )
       rememberWorkspaceContext(userId, "customer");
   }, [pathname, userId]);

@@ -2,7 +2,6 @@ import {
   LoadingContent,
   LoadingValue,
   LoadingPagination,
-  LoadingTable,
 } from "@/components/ui/LoadingContent";
 import { Field } from "@/components/ui/Field";
 import { SelectField } from "@/components/ui/SelectField";
@@ -164,37 +163,5 @@ export function InboxPreferencesSkeleton() {
         </span>
       </div>
     </LoadingContent>
-  );
-}
-
-export function BookingsSkeleton() {
-  return (
-    <>
-      <h1>My bookings</h1>
-      <LoadingContent label="Loading bookings…">
-        <h2>Reserve a time</h2>
-        <p>
-          Enter times in your device timezone (
-          {Intl.DateTimeFormat().resolvedOptions().timeZone}). Book 15 minutes
-          to 8 hours, up to 180 days ahead. Availability is checked when you
-          submit.
-        </p>
-        <form className="component-card">
-          <fieldset className="settings-fields">
-            <legend>Reservation</legend>
-            <SelectField label="Resource" required>
-              <option />
-            </SelectField>
-            <Field label="Starts" required type="datetime-local" readOnly />
-            <Field label="Ends" required type="datetime-local" readOnly />
-          </fieldset>
-          <Button>Book</Button>
-        </form>
-        <LoadingTable
-          label="Loading bookings…"
-          columns={["Resource", "Time", "Status", "Actions"]}
-        />
-      </LoadingContent>
-    </>
   );
 }
