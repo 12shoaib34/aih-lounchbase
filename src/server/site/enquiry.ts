@@ -89,7 +89,7 @@ export async function handleEnquiry(request: Request, env: Record<string,string 
       if (count > 20) return json({error:"Too many attempts. Try again next hour."}, 429);
     }
     const verification = await verify("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-      method: "POST", body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token }), signal: AbortSignal.timeout(10000),
+      method: "POST", body: new URLSearchParams({ secret: env.TURNSTILE_SECRET!, response: token }), signal: AbortSignal.timeout(10000),
     });
     const check = (await verification.json()) as Siteverify;
     const hostOk = check.hostname === new URL(env.PUBLIC_ORIGIN).hostname;

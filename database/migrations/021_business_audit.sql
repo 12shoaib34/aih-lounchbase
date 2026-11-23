@@ -1,0 +1,8 @@
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_action_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_action_check CHECK (action IN ('owner.bootstrapped', 'owner.transferred_out', 'owner.transferred_in', 'invitation.created', 'invitation.email_accepted', 'invitation.email_failed', 'invitation.cancelled', 'invitation.accepted', 'member.permissions_changed', 'member.removed', 'business.updated', 'contact.created', 'contact.imported', 'contact.updated', 'file.created', 'file.restored', 'file.deleted', 'resource.created', 'booking.created', 'booking.cancelled', 'invoice.created', 'invoice.issued', 'invoice.voided', 'invoice.payment_recorded', 'invoice.checkout_started', 'invoice.checkout_created', 'invoice.payment_confirmed'));
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_target_type_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_target_type_check CHECK (target_type IN ('account', 'invitation', 'business', 'contact', 'file', 'resource', 'booking', 'invoice'));
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_actor_type_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_actor_type_check CHECK (actor_type IN ('account', 'operator', 'service'));
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_actor_reference_check CHECK ((actor_type = 'operator' AND actor_id IS NULL) OR (actor_type = 'account' AND actor_id IS NOT NULL AND length(actor_id) BETWEEN 1 AND 128) OR (actor_type = 'service' AND actor_id IS NOT NULL AND actor_id = 'stripe'));

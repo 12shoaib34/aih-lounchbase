@@ -17,9 +17,9 @@ Use this list alongside [the migration plan](INTEGRATION-PLAN.md). Tick a task a
 - [x] **4. Restore public data journeys**
   - [x] Verify paid and venture enquiries, persistence, retries, fallback and notifications.
   - [x] Verify public blog, metadata, sitemap, aliases, unavailable and missing states.
-- [ ] **5. Migrate Launchbase identity and shells**
-  - [ ] Port account, invite, auth, MFA, personal/staff layouts and reference records.
-  - [ ] Verify role boundaries, callbacks, deep links and session isolation.
+- [x] **5. Migrate Launchbase identity and shells**
+  - [x] Port account, invite, auth, MFA, personal/staff layouts and reference records.
+  - [x] Verify role boundaries, callbacks, deep links and session isolation.
 - [ ] **6. Migrate Launchbase modules**
   - [ ] Team, accounts, business settings and audit.
   - [ ] Contacts and private files.

@@ -1,0 +1,2 @@
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_action_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_action_check CHECK (action IN ('owner.bootstrapped', 'owner.transferred_out', 'owner.transferred_in', 'invitation.created', 'invitation.email_accepted', 'invitation.email_failed', 'invitation.cancelled', 'invitation.accepted', 'member.permissions_changed', 'member.removed'));

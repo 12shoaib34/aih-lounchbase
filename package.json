@@ -7,26 +7,38 @@
     "build": "next build && opennextjs-cloudflare build --skipNextBuild",
     "preview": "wrangler dev --local",
     "test:routing": "playwright test",
-    "test:public-data": "node scripts/public-fixture.mjs"
+    "test:public-data": "node scripts/public-fixture.mjs",
+    "preview:identity": "node scripts/identity-preview.mjs",
+    "test:identity": "playwright test -c playwright.identity.config.ts",
+    "account:recover-mfa": "node scripts/recover-mfa.mjs",
+    "db:migrate": "node scripts/migrate.mjs"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.107.1",
+    "better-auth": "^1.7.20",
     "gsap": "^3.15.1",
     "hono": "4.13.18",
     "markdown-it": "^14.1.1",
     "next": "16.4.5",
+    "pg": "^8.23.1",
     "postgres": "^3.4.9",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "zod": "^4.6.7",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@better-auth/utils": "^0.5.1",
     "@electric-sql/pglite": "^0.5.15",
     "@electric-sql/pglite-socket": "^0.2.18",
     "@opennextjs/cloudflare": "1.20.16",
     "@playwright/test": "1.65.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "24.19.2",
+    "@types/pg": "^8.23.1",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
+    "embedded-postgres": "^18.7.0-beta.19",
     "typescript": "5.9.3",
     "wrangler": "4.158.0"
   }

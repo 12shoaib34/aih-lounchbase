@@ -1,0 +1,6 @@
+ALTER TABLE billing_provider_events ADD COLUMN acknowledged_at timestamptz;
+ALTER TABLE billing_provider_events ADD COLUMN acknowledged_by text REFERENCES "user"(id) ON DELETE SET NULL;
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_action_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_action_check CHECK (action IN ('owner.bootstrapped', 'owner.transferred_out', 'owner.transferred_in', 'invitation.created', 'invitation.email_accepted', 'invitation.email_failed', 'invitation.cancelled', 'invitation.accepted', 'member.permissions_changed', 'member.removed', 'business.updated', 'contact.created', 'contact.imported', 'contact.updated', 'file.created', 'file.restored', 'file.deleted', 'resource.created', 'booking.created', 'booking.cancelled', 'invoice.created', 'invoice.issued', 'invoice.voided', 'invoice.payment_recorded', 'invoice.checkout_started', 'invoice.checkout_created', 'invoice.payment_confirmed', 'payment_review.acknowledged'));
+ALTER TABLE admin_audit_events DROP CONSTRAINT admin_audit_events_target_type_check;
+ALTER TABLE admin_audit_events ADD CONSTRAINT admin_audit_events_target_type_check CHECK (target_type IN ('account', 'invitation', 'business', 'contact', 'file', 'resource', 'booking', 'invoice', 'payment-event'));
